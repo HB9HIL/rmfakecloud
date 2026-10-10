@@ -39,9 +39,20 @@ var brushColors = map[rm.BrushColor][3]float64{
 	rm.Yellow2:          {0.969, 0.910, 0.318},
 }
 
+func init() {
+	model.ConfigPath = "disable"
+}
+
 // RenderPDF renders all pages of an archive to PDF.
 // If the archive has a background PDF, the annotations are stamped onto its pages.
-func RenderPDF(a *MyArchive, w io.Writer) error {
+func RenderPDF(a *MyArchive, w io.Writer) (err error) {
+	// a broken document must not take down the server
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("pdf export failed: %v", r)
+		}
+	}()
+
 	if len(a.Pages) == 0 {
 		if a.PayloadReader != nil {
 			_, err := io.Copy(w, a.PayloadReader)
