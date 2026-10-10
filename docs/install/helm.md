@@ -3,7 +3,7 @@
 
 You will need to clone the repo : 
 ```sh
-git clone https://github.com/ddvk/rmfakecloud && cd rmfakecloud/helm
+git clone https://github.com/hb9hil/rmfakecloud && cd rmfakecloud/helm
 
 Modify your variables just like a simple docker-compose
 ```sh

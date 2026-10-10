@@ -38,7 +38,7 @@ version: "3.4"
 services:
   rmfakecloud:
     network_mode: host
-    image: ddvk/rmfakecloud
+    image: ghcr.io/hb9hil/rmfakecloud
     container_name: rmfakecloud
     restart: unless-stopped
     ports: 

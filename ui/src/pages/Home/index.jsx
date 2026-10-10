@@ -14,7 +14,7 @@ const Home = () => {
         </p>
         <p>
           It's is still a work in progress being, actively maintained over
-          on <a href="https://github.com/ddvk/rmfakecloud">GitHub</a>.
+          on <a href="https://github.com/hb9hil/rmfakecloud">GitHub</a>.
         </p>
         <h2>Tips</h2>
         <ul>
@@ -41,7 +41,7 @@ const Home = () => {
           </li>
           <li>
             <p>
-              You should also read the <a href="https://github.com/ddvk/rmfakecloud/blob/master/README.md">README</a>,
+              You should also read the <a href="https://github.com/hb9hil/rmfakecloud/blob/master/README.md">README</a>,
               to see the current status of the project and notes from the developers.
             </p>
           </li>

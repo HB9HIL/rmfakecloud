@@ -6,16 +6,16 @@ Dependencies
 
 To be able to compile from source, you'll need the following dependencies:
 
-* [nodejs](https://nodejs.org) version 16 at most
-* [pnpm](https://pnpm.io/)
-* [go](https://go.dev/) version 1.16 at least
+* [nodejs](https://nodejs.org) version 18 or newer
+* [pnpm](https://pnpm.io/) version 9
+* [go](https://go.dev/) version 1.26 or newer
 * make
 
 Build
 -----
 
 ```sh
-git clone https://github.com/ddvk/rmfakecloud
+git clone https://github.com/hb9hil/rmfakecloud
 cd rmfakecloud
 make all
 ```
@@ -23,9 +23,9 @@ make all
 Installing
 ==========
 
-1. Copy the `rmfakecloud` binary for your system from the `dist` folder to `/usr/local/bin` and rename it to `rmfakecloud`
-   e.g. `cp dist/rmfakecloud-x64 /usr/local/bin/rmfakecloud`
-   or `scp dist/rmfakecloud-armv7 raspberry:/usr/local/bin/rmfakecloud`
+1. Download the binary for your system from the [releases](https://github.com/hb9hil/rmfakecloud/releases) (or take the one you built from the `dist` folder), copy it to `/usr/local/bin` and rename it to `rmfakecloud`
+   e.g. `cp rmfakecloud-linux-amd64 /usr/local/bin/rmfakecloud`
+   or `scp rmfakecloud-linux-armv7 raspberry:/usr/local/bin/rmfakecloud`
 2. Setup the service to run with your init system. See below for examples
 3. Create and modify the configuration file. See below for examples
 4. Create the library folder you specified in your configuration file.

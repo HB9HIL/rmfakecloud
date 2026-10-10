@@ -1,13 +1,13 @@
 You can evaluate the program with:
 
 ```sh
-docker run -it --rm -p 3000:3000 ddvk/rmfakecloud
+docker run -it --rm -p 3000:3000 ghcr.io/hb9hil/rmfakecloud
 ```
 
 To setup it for normal usage, you'll use need to setup a volume to store user configuration and documents:
 
 ```sh
-docker run -it --rm -p 3000:3000 -p 8883:8883 -v ./data:/data -e JWT_SECRET_KEY='something' ddvk/rmfakecloud
+docker run -it --rm -p 3000:3000 -p 8883:8883 -v ./data:/data -e JWT_SECRET_KEY='something' ghcr.io/hb9hil/rmfakecloud
 ```
 
 Explore others configuration variables on [the dedicated page](configuration.md).
@@ -19,7 +19,7 @@ Explore others configuration variables on [the dedicated page](configuration.md)
 version: "3"
 services:
   rmfakecloud:
-    image: ddvk/rmfakecloud
+    image: ghcr.io/hb9hil/rmfakecloud
     container_name: rmfakecloud
     restart: unless-stopped
     ports:
