@@ -64,7 +64,7 @@ func (d *localFS) List(folder string, depth int) (*messages.IntegrationFolder, e
 
 	startPath := path.Clean(folder)
 
-	log.Infof("[localfs] query for '%s' depth %d: ", startPath,  depth)
+	log.Infof("[localfs] query for '%s' depth %d: ", startPath, depth)
 
 	err := visitDir(d.rootPath, startPath, depth, response, func(s string) ([]fs.FileInfo, error) {
 		di, err := os.ReadDir(s)

@@ -514,7 +514,6 @@ func (h *AuthHook) handleBroadcast(senderClientID, userID string, msg *Signaling
 		}
 	}
 
-
 	if roomID != "" {
 		payloadBytes, _ := json.Marshal(msg.Payload)
 		h.roomManager.AddBroadcast(roomID, senderClientID, payloadBytes)
@@ -550,7 +549,6 @@ func (h *AuthHook) handleDirect(senderClientID, userID string, msg *SignalingMes
 		h.server.Publish(peerTopic, msgBytes, false, qos)
 	}
 
-
 	if roomID != "" && h.roomManager != nil {
 		payloadBytes, _ := json.Marshal(msg.Payload)
 		h.roomManager.AddDirect(roomID, senderClientID, targetClientID, payloadBytes)
@@ -579,7 +577,6 @@ func (h *AuthHook) OnPublish(cl *mqtt.Client, pk packets.Packet) (packets.Packet
 	if log.GetLevel() >= log.DebugLevel && payloadSize > 0 && payloadSize < 1000 {
 		log.Debugf("MQTT: Publish payload: %s", string(pk.Payload))
 	}
-
 
 	if roomID := h.roomManager.FindActiveRoom(userID); roomID != "" {
 		h.roomManager.Keepalive(roomID)
@@ -616,7 +613,7 @@ func (h *AuthHook) OnPublish(cl *mqtt.Client, pk packets.Packet) (packets.Packet
 				payloadBytes, _ := json.Marshal(msg.Payload)
 				if msg.Type == "direct" {
 					targetClientID := msg.ClientId
-	
+
 					parts := strings.Split(pk.TopicName, "/")
 					if len(parts) >= 4 {
 						targetClientID = parts[3]

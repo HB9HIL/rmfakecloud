@@ -116,7 +116,6 @@ func (app *App) Stop() {
 	}
 }
 
-
 // NewApp constructs an app
 func NewApp(cfg *config.Config) App {
 	debugMode := log.GetLevel() >= log.DebugLevel

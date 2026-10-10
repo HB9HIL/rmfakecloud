@@ -85,8 +85,8 @@ const (
 
 // Config config
 type Config struct {
-	Port              string
-	StorageURL        string
+	Port       string
+	StorageURL string
 	//only https
 	CloudHost         string
 	DataDir           string
