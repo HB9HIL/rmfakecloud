@@ -142,6 +142,9 @@ func (z *Zip) InitPages() {
 	} else {
 		// instantiate the slice of pages
 		z.Pages = make([]Page, z.Content.PageCount)
+		for i := range z.Pages {
+			z.Pages[i].DocPage = i
+		}
 	}
 }
 

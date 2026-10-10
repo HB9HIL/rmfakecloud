@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 
 	"github.com/ddvk/rmfakecloud/internal/archive"
 	"github.com/ddvk/rmfakecloud/internal/encoding/rm"
@@ -55,7 +56,11 @@ func RenderPDF(a *MyArchive, w io.Writer) error {
 
 	ctx := context.Background()
 	conf := model.NewDefaultConfiguration()
-	dims, err := api.PageDims(ctx, a.PayloadReader, conf)
+	background, err := arrangeBackground(ctx, a.PayloadReader, a.Pages, conf)
+	if err != nil {
+		return fmt.Errorf("can't read background pdf: %w", err)
+	}
+	dims, err := api.PageDims(ctx, background, conf)
 	if err != nil {
 		return fmt.Errorf("can't read background pdf: %w", err)
 	}
@@ -69,10 +74,53 @@ func RenderPDF(a *MyArchive, w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if _, err := a.PayloadReader.Seek(0, io.SeekStart); err != nil {
+	if _, err := background.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
-	return api.AddWatermarks(ctx, a.PayloadReader, w, nil, wm, conf)
+	return api.AddWatermarks(ctx, background, w, nil, wm, conf)
+}
+
+// arrangeBackground returns the background PDF with its pages in the order of the archive pages.
+// Pages deleted on the tablet are dropped, inserted notebook pages get a blank page.
+func arrangeBackground(ctx context.Context, bg io.ReadSeeker, pages []archive.Page, conf *model.Configuration) (io.ReadSeeker, error) {
+	count, err := api.PageCount(ctx, bg, conf)
+	if err != nil {
+		return nil, err
+	}
+
+	// a blank page is appended after the last page if needed
+	blank := count + 1
+	order := make([]string, len(pages))
+	arranged := len(pages) != count
+	needsBlank := false
+	for i, p := range pages {
+		page := p.DocPage + 1
+		if p.DocPage < 0 || p.DocPage >= count {
+			page, needsBlank = blank, true
+		}
+		arranged = arranged || page != i+1
+		order[i] = strconv.Itoa(page)
+	}
+
+	if _, err := bg.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	if !arranged {
+		return bg, nil
+	}
+
+	if needsBlank {
+		var buf bytes.Buffer
+		if err := api.InsertPages(ctx, bg, &buf, []string{strconv.Itoa(count)}, false, nil, conf); err != nil {
+			return nil, err
+		}
+		bg = bytes.NewReader(buf.Bytes())
+	}
+	var out bytes.Buffer
+	if err := api.Collect(ctx, bg, &out, order, conf); err != nil {
+		return nil, err
+	}
+	return bytes.NewReader(out.Bytes()), nil
 }
 
 // annotationPages draws the strokes of each page onto a page of the matching background size
