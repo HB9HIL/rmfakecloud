@@ -11,7 +11,7 @@ WORKDIR /src
 COPY ui .
 RUN pnpm install && pnpm build
 
-FROM golang:bookworm AS gobuilder
+FROM golang:1.26-bookworm AS gobuilder
 ARG VERSION
 WORKDIR /src
 COPY . .
