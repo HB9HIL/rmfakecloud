@@ -1,237 +1,159 @@
 package exporter
 
 import (
+	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
 
+	"github.com/ddvk/rmfakecloud/internal/archive"
 	"github.com/ddvk/rmfakecloud/internal/encoding/rm"
-	"github.com/sirupsen/logrus"
-	"github.com/unidoc/unipdf/v3/annotator"
-	"github.com/unidoc/unipdf/v3/contentstream"
-	"github.com/unidoc/unipdf/v3/contentstream/draw"
-	"github.com/unidoc/unipdf/v3/core"
-	"github.com/unidoc/unipdf/v3/creator"
-	pdf "github.com/unidoc/unipdf/v3/model"
+	"github.com/pdfcpu/pdfcpu/pkg/api"
+	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/model"
+	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
 )
 
-const (
-	DeviceWidth  = 1404
-	DeviceHeight = 1872
-)
+// page size in points for notebooks without a background PDF
+const notebookWidth, notebookHeight = 445.0, 594.0
 
-var rmPageSize = creator.PageSize{445, 594}
+// shader tool of newer firmware, not defined in the rm package
+const shader rm.BrushType = 23
 
-type PdfGenerator struct {
-	options   PdfGeneratorOptions
-	pdfReader *pdf.PdfReader
-	template  bool
+// stroke colors as RGB, values from rmscene/rmc
+var brushColors = map[rm.BrushColor][3]float64{
+	rm.Black:            {0, 0, 0},
+	rm.Grey:             {0.565, 0.565, 0.565},
+	rm.White:            {1, 1, 1},
+	rm.HighlightYellow:  {0.984, 0.969, 0.098},
+	rm.HighlightGreen:   {0, 1, 0},
+	rm.HighlightPink:    {1, 0.753, 0.796},
+	rm.Blue:             {0.306, 0.412, 0.788},
+	rm.Red:              {0.702, 0.243, 0.224},
+	rm.GreyOverlap:      {0.490, 0.490, 0.490},
+	rm.HighlightDynamic: {0.984, 0.969, 0.098},
+	rm.Green2:           {0.631, 0.847, 0.490},
+	rm.Cyan:             {0.545, 0.816, 0.898},
+	rm.Magenta:          {0.718, 0.510, 0.804},
+	rm.Yellow2:          {0.969, 0.910, 0.318},
 }
 
-type PdfGeneratorOptions struct {
-	AddPageNumbers  bool
-	AllPages        bool
-	AnnotationsOnly bool //export the annotations without the background/pdf
-}
-
-func normalized(p1 rm.Point, ratioX float64) (float64, float64) {
-	return float64(p1.X) * ratioX, float64(p1.Y) * ratioX
-}
-
-func (p *PdfGenerator) Generate(zip *MyArchive, output io.Writer, options PdfGeneratorOptions) (err error) {
-
-	p.options = options
-
-	if len(zip.Pages) == 0 {
-		if zip.PayloadReader != nil {
-			_, err := io.Copy(output, zip.PayloadReader)
+// RenderPDF renders all pages of an archive to PDF.
+// If the archive has a background PDF, the annotations are stamped onto its pages.
+func RenderPDF(a *MyArchive, w io.Writer) error {
+	if len(a.Pages) == 0 {
+		if a.PayloadReader != nil {
+			_, err := io.Copy(w, a.PayloadReader)
 			return err
 		}
-
 		return errors.New("the document has no pages")
 	}
 
-	if err = p.initBackgroundPages(zip.PayloadReader); err != nil {
+	if a.PayloadReader == nil {
+		return writePDF(w, annotationPages(a.Pages, nil))
+	}
+
+	ctx := context.Background()
+	conf := model.NewDefaultConfiguration()
+	dims, err := api.PageDims(ctx, a.PayloadReader, conf)
+	if err != nil {
+		return fmt.Errorf("can't read background pdf: %w", err)
+	}
+
+	var annotations bytes.Buffer
+	if err := writePDF(&annotations, annotationPages(a.Pages, dims)); err != nil {
 		return err
 	}
-
-	c := creator.New()
-	if p.template {
-		// use the standard page size
-		c.SetPageSize(rmPageSize)
+	wm, err := api.PDFMultiWatermarkForReadSeeker(ctx, bytes.NewReader(annotations.Bytes()), 1, 1,
+		"scalefactor:1 abs, pos:bl, rot:0", true, false, types.POINTS)
+	if err != nil {
+		return err
 	}
-
-	if p.pdfReader != nil && p.options.AllPages {
-		logrus.Info("generating all pages")
-		outlines := p.pdfReader.GetOutlineTree()
-		c.SetOutlineTree(outlines)
+	if _, err := a.PayloadReader.Seek(0, io.SeekStart); err != nil {
+		return err
 	}
-
-	for i, pageAnnotations := range zip.Pages {
-		hasContent := pageAnnotations.Data != nil
-
-		// do not add a page when there are no annotations
-		if !p.options.AllPages && !hasContent {
-			continue
-		}
-
-		page, err := p.addBackgroundPage(c, i+1)
-		if err != nil {
-			return err
-		}
-
-		ratio := c.Height() / c.Width()
-
-		var scale float64
-		if ratio < 1.33 {
-			scale = c.Width() / DeviceWidth
-		} else {
-			scale = c.Height() / DeviceHeight
-		}
-		if page == nil {
-			logrus.Fatal("page is null")
-		}
-
-		if err != nil {
-			return err
-		}
-		if !hasContent {
-			continue
-		}
-
-		contentCreator := contentstream.NewContentCreator()
-		contentCreator.Add_q()
-
-		for _, layer := range pageAnnotations.Data.Layers {
-			for _, line := range layer.Lines {
-				if len(line.Points) < 1 {
-					continue
-				}
-				if line.BrushType == rm.Eraser || line.BrushType == rm.EraseArea {
-					continue
-				}
-
-				if line.BrushType == rm.HighlighterV5 {
-					last := len(line.Points) - 1
-					x1, y1 := normalized(line.Points[0], scale)
-					x2, _ := normalized(line.Points[last], scale)
-					// make horizontal lines only, use y1
-					width := scale * 30
-					y1 += width / 2
-
-					lineDef := annotator.LineAnnotationDef{X1: x1 - 1, Y1: c.Height() - y1, X2: x2, Y2: c.Height() - y1}
-					lineDef.LineColor = pdf.NewPdfColorDeviceRGB(1.0, 1.0, 0.0) //yellow
-					lineDef.Opacity = 0.5
-					lineDef.LineWidth = width
-					ann, err := annotator.CreateLineAnnotation(lineDef)
-					if err != nil {
-						return err
-					}
-					page.AddAnnotation(ann)
-				} else {
-					path := draw.NewPath()
-					for i := 0; i < len(line.Points); i++ {
-						x1, y1 := normalized(line.Points[i], scale)
-						path = path.AppendPoint(draw.NewPoint(x1, c.Height()-y1))
-					}
-
-					contentCreator.Add_w(float64(line.BrushSize / 10))
-
-					switch line.BrushColor {
-					case rm.Black:
-						contentCreator.Add_rg(1.0, 1.0, 1.0)
-					case rm.White:
-						contentCreator.Add_rg(0.0, 0.0, 0.0)
-					case rm.Grey:
-						contentCreator.Add_rg(0.8, 0.8, 0.8)
-					}
-
-					//TODO: use bezier
-					draw.DrawPathWithCreator(path, contentCreator)
-
-					contentCreator.Add_S()
-				}
-			}
-		}
-		contentCreator.Add_Q()
-		drawingOperations := contentCreator.Operations().String()
-		pageContentStreams, err := page.GetAllContentStreams()
-		if err != nil {
-			return err
-		}
-		//hack: wrap the page content in a context to prevent transformation matrix misalignment
-		wrapper := []string{"q", pageContentStreams, "Q", drawingOperations}
-		page.SetContentStreams(wrapper, core.NewFlateEncoder())
-	}
-
-	return c.Write(output)
+	return api.AddWatermarks(ctx, a.PayloadReader, w, nil, wm, conf)
 }
 
-func (p *PdfGenerator) initBackgroundPages(r io.ReadSeeker) error {
-	if r != nil {
-		pdfReader, err := pdf.NewPdfReader(r)
-		if err != nil {
-			return err
+// annotationPages draws the strokes of each page onto a page of the matching background size
+func annotationPages(pages []archive.Page, dims []types.Dim) []pdfPage {
+	result := make([]pdfPage, len(pages))
+	for i, p := range pages {
+		width, height := notebookWidth, notebookHeight
+		if i < len(dims) {
+			width, height = dims[i].Width, dims[i].Height
 		}
 
-		encrypted, err := pdfReader.IsEncrypted()
-		if err != nil {
-			return nil
+		scale := height / float64(rm.Height)
+		if height/width < 1.33 {
+			scale = width / float64(rm.Width)
 		}
-		if encrypted {
-			valid, err := pdfReader.Decrypt([]byte(""))
-			if err != nil {
-				return err
+
+		// notebook pages can be extended downwards beyond the screen height
+		if i >= len(dims) && p.Data != nil {
+			for _, layer := range p.Data.Layers {
+				for _, line := range layer.Lines {
+					for _, pt := range line.Points {
+						height = max(height, float64(pt.Y+pt.Width)*scale)
+					}
+				}
 			}
-			if !valid {
-				return fmt.Errorf("cannot decrypt")
-			}
-
 		}
 
-		p.pdfReader = pdfReader
-		p.template = false
-		return nil
+		var content []byte
+		if p.Data != nil {
+			content = drawStrokes(p.Data, scale, height)
+		}
+		result[i] = pdfPage{width: width, height: height, content: content}
 	}
-
-	logrus.Info("template")
-	p.template = true
-	return nil
+	return result
 }
 
-func (p *PdfGenerator) addBackgroundPage(c *creator.Creator, pageNum int) (*pdf.PdfPage, error) {
-	var page *pdf.PdfPage
+// drawStrokes returns a content stream with all strokes of a page.
+// Pen strokes are drawn segment by segment with the width of each point, round caps join them smoothly.
+// Highlighter and shader strokes are drawn as one semi-transparent path, so overlapping segments don't add up.
+func drawStrokes(page *rm.Rm, scale, height float64) []byte {
+	var b bytes.Buffer
+	b.WriteString("1 J 1 j\n")
+	for _, layer := range page.Layers {
+		for _, line := range layer.Lines {
+			if len(line.Points) == 0 || line.BrushType == rm.Eraser || line.BrushType == rm.EraseArea {
+				continue
+			}
 
-	if !p.template && !p.options.AnnotationsOnly {
-		tmpPage, err := p.pdfReader.GetPage(pageNum)
-		if err != nil {
-			return nil, err
+			color := brushColors[line.BrushColor]
+			transparent := line.BrushType == rm.Highlighter || line.BrushType == rm.HighlighterV5 || line.BrushType == shader
+			if transparent && (line.BrushColor == rm.Black || line.BrushColor == rm.Grey || line.BrushColor == rm.White) {
+				color = brushColors[rm.HighlightYellow]
+			}
+			fmt.Fprintf(&b, "q %.3f %.3f %.3f RG\n", color[0], color[1], color[2])
+
+			if transparent {
+				var width float64
+				for _, p := range line.Points {
+					width += float64(p.Width)
+				}
+				fmt.Fprintf(&b, "/GSH gs %.2f w", width/float64(len(line.Points))*scale)
+				for i, p := range line.Points {
+					op := "l"
+					if i == 0 {
+						op = "m"
+					}
+					fmt.Fprintf(&b, " %.2f %.2f %s", float64(p.X)*scale, height-float64(p.Y)*scale, op)
+				}
+				b.WriteString(" S\nQ\n")
+				continue
+			}
+
+			prev := line.Points[0]
+			for _, p := range line.Points {
+				fmt.Fprintf(&b, "%.2f w %.2f %.2f m %.2f %.2f l S\n", float64(p.Width)*scale,
+					float64(prev.X)*scale, height-float64(prev.Y)*scale,
+					float64(p.X)*scale, height-float64(p.Y)*scale)
+				prev = p
+			}
+			b.WriteString("Q\n")
 		}
-		mbox, err := tmpPage.GetMediaBox()
-		if err != nil {
-			return nil, err
-		}
-
-		// TODO: adjust the page if cropped
-		pageHeight := mbox.Ury - mbox.Lly
-		pageWidth := mbox.Urx - mbox.Llx
-		// use the pdf's page size
-		c.SetPageSize(creator.PageSize{pageWidth, pageHeight})
-		c.AddPage(tmpPage)
-		page = tmpPage
-	} else {
-		page = c.NewPage()
 	}
-
-	if p.options.AddPageNumbers {
-		c.DrawFooter(func(block *creator.Block, args creator.FooterFunctionArgs) {
-			p := c.NewParagraph(fmt.Sprintf("%d", args.PageNum))
-			p.SetFontSize(8)
-			w := block.Width() - 20
-			h := block.Height() - 10
-			p.SetPos(w, h)
-			block.Draw(p)
-		})
-	}
-	return page, nil
+	return b.Bytes()
 }

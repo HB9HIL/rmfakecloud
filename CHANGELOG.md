@@ -14,3 +14,9 @@ The first release of the curated `rmfakecloud` fork by @HB9HIL. I forked this pr
 #### Chore
 - Updated go version and external modules to the latest versions (by @HB9HIL)
 - Replaced the unmaintained `rmapi` dependency with the archive and `.rm` decoding code from [ddvk/rmapi](https://github.com/ddvk/rmapi), which can also parse the v6 format (by @HB9HIL)
+- Replaced the commercial `unipdf` library with a small PDF renderer in pure Go, no cgo needed (by @HB9HIL)
+
+#### Fixes
+- Stroke colors are rendered correctly, previously all strokes were black (by @HB9HIL)
+- Highlighter and shader strokes are semi-transparent (by @HB9HIL)
+- Notebook pages extended downwards are exported completely (by @HB9HIL)
