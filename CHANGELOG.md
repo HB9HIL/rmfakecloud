@@ -13,3 +13,4 @@ The first release of the curated `rmfakecloud` fork by @HB9HIL. I forked this pr
 
 #### Chore
 - Updated go version and external modules to the latest versions (by @HB9HIL)
+- Replaced the unmaintained `rmapi` dependency with the archive and `.rm` decoding code from [ddvk/rmapi](https://github.com/ddvk/rmapi), which can also parse the v6 format (by @HB9HIL)

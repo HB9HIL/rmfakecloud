@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/juruen/rmapi/encoding/rm"
+	"github.com/ddvk/rmfakecloud/internal/encoding/rm"
 	"github.com/sirupsen/logrus"
 	"github.com/unidoc/unipdf/v3/annotator"
 	"github.com/unidoc/unipdf/v3/contentstream"
