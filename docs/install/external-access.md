@@ -111,7 +111,7 @@ curl --cert client.pfx https://rmfakecloud.example.com
 
 Copy the `client.crt` and `client.key` files to `/home/root/rmfakecloud` with your preferred method (`scp`, WinSCP, etc.).
 
-Install `rmfakecloud-proxy` as the [installation instructions](../remarkable/setup.md#install-rmfakecloud-proxy) explain.
+Install `rmfakecloud-proxy` as the [installation instructions](../remarkable/setup.md#rmfakecloud-proxy-script) explain.
 
 When asked for the cloud url, enter your public address. In this case, `https://rmfakecloud.example.com`.
 
