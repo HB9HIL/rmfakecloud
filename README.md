@@ -58,9 +58,11 @@ run `./dev.sh` which should start the UI and backend
 
 Releases: note the changes under `## [Unreleased]` in `CHANGELOG.md`, move them
 into a `## [X.Y.Z] - date` section and push the tag `vX.Y.Z`. The release
-workflow runs the tests, takes that section as the release notes, attaches
-binaries for Linux (amd64, arm64, armv7, armv6) and Windows (amd64) and pushes
-the multi-arch image `ghcr.io/hb9hil/rmfakecloud:X.Y.Z` (also tagged `latest`).
+workflow runs the tests, takes that section as the release notes and attaches
+binaries for Linux (amd64, arm64, armv7, armv6) and Windows (amd64). The Docker
+workflow pushes the multi-arch image `ghcr.io/hb9hil/rmfakecloud:X.Y.Z` (also
+tagged `latest`). Running the Docker workflow manually builds the selected
+branch as `ghcr.io/hb9hil/rmfakecloud:<git describe>`.
 
 ### Caveats/ WARNING
 

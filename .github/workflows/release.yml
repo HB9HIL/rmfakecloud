@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   check:
@@ -94,35 +93,8 @@ jobs:
           name: rmfakecloud-${{ matrix.name }}
           path: dist/rmfakecloud-${{ matrix.name }}
 
-  docker:
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ghcr.io/hb9hil/rmfakecloud
-          tags: |
-            type=semver,pattern={{version}}
-      - uses: docker/setup-qemu-action@v4
-      - uses: docker/setup-buildx-action@v4
-      - uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          push: true
-          build-args: VERSION=${{ steps.meta.outputs.version }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
   release:
-    needs: [build, docker]
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v8
