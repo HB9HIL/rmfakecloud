@@ -87,6 +87,13 @@ func (z *Zip) readContent(zr *zip.Reader) error {
 	p := contentFile.FileInfo().Name()
 	z.UUID = strings.TrimSuffix(path.Base(p), path.Ext(p))
 
+	z.InitPages()
+	return nil
+}
+
+// InitPages builds the page list and the page id map from the content file.
+// It supports pages/redirectionPageMap and the cPages of firmware 3.0+.
+func (z *Zip) InitPages() {
 	redirectedCount := len(z.Content.RedirectionMap)
 	pagesCount := len(z.Content.Pages)
 	if redirectedCount > 0 {
@@ -136,7 +143,6 @@ func (z *Zip) readContent(zr *zip.Reader) error {
 		// instantiate the slice of pages
 		z.Pages = make([]Page, z.Content.PageCount)
 	}
-	return nil
 }
 
 // readPagedata reads the .pagedata file contained in an archive
@@ -229,9 +235,10 @@ func (z *Zip) readData(zr *zip.Reader) error {
 	for _, file := range files {
 		name, _ := splitExt(file.FileInfo().Name())
 
-		idx, err := z.pageIndex(name)
+		idx, err := z.PageIndex(name)
 		if err != nil {
-			return err
+			log.Warn("skipping file: ", err)
+			continue
 		}
 
 		if len(z.Pages) <= idx {
@@ -291,7 +298,8 @@ func (z *Zip) readThumbnails(zr *zip.Reader) error {
 	return nil
 }
 
-func (z *Zip) pageIndex(namePart string) (idx int, err error) {
+// PageIndex returns the index of a page by its file name (number or uuid)
+func (z *Zip) PageIndex(namePart string) (idx int, err error) {
 	idx, err = strconv.Atoi(namePart)
 	if err == nil {
 		return idx, nil
@@ -307,7 +315,7 @@ func (z *Zip) pageIndex(namePart string) (idx int, err error) {
 	var ok bool
 	idx, ok = z.pageMap[namePart]
 	if !ok {
-		log.Warn("Page not found in map: ", namePart)
+		return -1, errors.New("page not found in map: " + namePart)
 	}
 
 	return
@@ -325,9 +333,10 @@ func (z *Zip) readMetadata(zr *zip.Reader) error {
 
 		// name is 0-metadata.json or uuid-metadata
 		namePart := strings.TrimSuffix(name, "-metadata")
-		idx, err := z.pageIndex(namePart)
+		idx, err := z.PageIndex(namePart)
 		if err != nil {
-			return err
+			log.Warn("skipping file: ", err)
+			continue
 		}
 
 		if len(z.Pages) <= idx {

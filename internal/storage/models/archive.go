@@ -65,29 +65,29 @@ func ArchiveFromHashDoc(doc *HashDoc, rs RemoteStorage) (*exporter.MyArchive, er
 		}
 	}
 
-	for _, p := range a.Content.Pages {
-		if hash, ok := pageMap[p]; ok {
-			log.Debug("page ", hash)
-			reader, err := rs.GetReader(hash)
-			if err != nil {
-				return nil, err
-			}
-			pageBin, err := io.ReadAll(reader)
-			if err != nil {
-				return nil, err
-			}
-			rmpage := rm.New()
-			err = rmpage.UnmarshalBinary(pageBin)
-			if err != nil {
-				return nil, err
-			}
-
-			page := archive.Page{
-				Data:     rmpage,
-				Pagedata: "Blank",
-			}
-			a.Pages = append(a.Pages, page)
+	// all pages of the document, pages without strokes stay empty
+	a.InitPages()
+	for name, hash := range pageMap {
+		idx, err := a.PageIndex(name)
+		if err != nil || idx >= len(a.Pages) {
+			log.Warn("skipping page ", name, ": not in content")
+			continue
 		}
+		log.Debug("page ", hash)
+		reader, err := rs.GetReader(hash)
+		if err != nil {
+			return nil, err
+		}
+		pageBin, err := io.ReadAll(reader)
+		reader.Close()
+		if err != nil {
+			return nil, err
+		}
+		rmpage := rm.New()
+		if err := rmpage.UnmarshalBinary(pageBin); err != nil {
+			return nil, err
+		}
+		a.Pages[idx].Data = rmpage
 	}
 
 	return &a, nil
