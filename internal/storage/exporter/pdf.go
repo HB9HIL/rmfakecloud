@@ -147,6 +147,12 @@ func annotationPages(pages []archive.Page, dims []types.Dim) []pdfPage {
 		if height/width < 1.33 {
 			scale = width / float64(rm.Width)
 		}
+		xShift := 0.0
+		// v6 strokes on a PDF page are in device pixels (226 dpi) with x=Width/2 at the page center
+		if i < len(dims) && p.DocPage >= 0 && p.Data != nil && p.Data.Version == rm.V6 {
+			scale = 72.0 / 226.0
+			xShift = width/2 - float64(rm.Width)/2*scale
+		}
 
 		// notebook pages can be extended downwards beyond the screen height
 		if i >= len(dims) && p.Data != nil {
@@ -161,7 +167,7 @@ func annotationPages(pages []archive.Page, dims []types.Dim) []pdfPage {
 
 		var content []byte
 		if p.Data != nil {
-			content = drawStrokes(p.Data, scale, height)
+			content = drawStrokes(p.Data, scale, xShift, height)
 		}
 		result[i] = pdfPage{width: width, height: height, content: content}
 	}
@@ -171,7 +177,7 @@ func annotationPages(pages []archive.Page, dims []types.Dim) []pdfPage {
 // drawStrokes returns a content stream with all strokes of a page.
 // Pen strokes are drawn segment by segment with the width of each point, round caps join them smoothly.
 // Highlighter and shader strokes are drawn as one semi-transparent path, so overlapping segments don't add up.
-func drawStrokes(page *rm.Rm, scale, height float64) []byte {
+func drawStrokes(page *rm.Rm, scale, xShift, height float64) []byte {
 	var b bytes.Buffer
 	b.WriteString("1 J 1 j\n")
 	for _, layer := range page.Layers {
@@ -198,7 +204,7 @@ func drawStrokes(page *rm.Rm, scale, height float64) []byte {
 					if i == 0 {
 						op = "m"
 					}
-					fmt.Fprintf(&b, " %.2f %.2f %s", float64(p.X)*scale, height-float64(p.Y)*scale, op)
+					fmt.Fprintf(&b, " %.2f %.2f %s", float64(p.X)*scale+xShift, height-float64(p.Y)*scale, op)
 				}
 				b.WriteString(" S\nQ\n")
 				continue
@@ -207,8 +213,8 @@ func drawStrokes(page *rm.Rm, scale, height float64) []byte {
 			prev := line.Points[0]
 			for _, p := range line.Points {
 				fmt.Fprintf(&b, "%.2f w %.2f %.2f m %.2f %.2f l S\n", float64(p.Width)*scale,
-					float64(prev.X)*scale, height-float64(prev.Y)*scale,
-					float64(p.X)*scale, height-float64(p.Y)*scale)
+					float64(prev.X)*scale+xShift, height-float64(prev.Y)*scale,
+					float64(p.X)*scale+xShift, height-float64(p.Y)*scale)
 				prev = p
 			}
 			b.WriteString("Q\n")
