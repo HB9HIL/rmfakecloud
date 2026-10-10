@@ -2,7 +2,7 @@
 
 This is a replacement of the cloud, in case you want to sync/backup your files and have full control of the hosting environment.
 
-See the [project documentation](https://ddvk.github.io/rmfakecloud/) for setup and configuration.
+See the [project documentation](https://hb9hil.github.io/rmfakecloud/) for setup and configuration.
 
 ## Supported Devices
 
@@ -16,7 +16,7 @@ See the [project documentation](https://ddvk.github.io/rmfakecloud/) for setup a
 
 The current release of rmfakecloud supports file synchronization up to **reMarkable software 3.27.1**. Newer releases have not been tested yet.
 
-See the [documentation](https://ddvk.github.io/rmfakecloud/remarkable/setup/) for how to setup your device to use rmfakecloud.
+See the [documentation](https://hb9hil.github.io/rmfakecloud/remarkable/setup/) for how to setup your device to use rmfakecloud.
 
 
 ## Feature Parity With Official Cloud
@@ -25,22 +25,22 @@ See the [documentation](https://ddvk.github.io/rmfakecloud/remarkable/setup/) fo
 | -------- | --------- | ----- |
 | File synchronization (1.0) | ✅ |  |
 | File synchronization (1.5, 2, 3, 4) | ✅ |  |
-| [Send document by email](https://ddvk.github.io/rmfakecloud/install/configuration/#email-settings) | ✅ |  |
-| [Handwriting recognition](https://ddvk.github.io/rmfakecloud/install/configuration/#handwriting-recognition) | ✅ |  |
+| [Send document by email](https://hb9hil.github.io/rmfakecloud/install/configuration/#email-settings) | ✅ |  |
+| [Handwriting recognition](https://hb9hil.github.io/rmfakecloud/install/configuration/#handwriting-recognition) | ✅ |  |
 | Handwriting search | ❌ |  |
-| [Screen sharing](https://ddvk.github.io/rmfakecloud/install/configuration/#screen-sharing) | ✅ |  |
-| [Storage integrations](https://ddvk.github.io/rmfakecloud/usage/integrations/) | ✅ |  |
-| Integration with Dropbox | 🟡 | [WIP](https://github.com/ddvk/rmfakecloud/blob/master/internal/integrations/dropbox.go) |
+| [Screen sharing](https://hb9hil.github.io/rmfakecloud/install/configuration/#screen-sharing) | ✅ |  |
+| [Storage integrations](https://hb9hil.github.io/rmfakecloud/usage/integrations/) | ✅ |  |
+| Integration with Dropbox | 🟡 | [WIP](https://github.com/hb9hil/rmfakecloud/blob/master/internal/integrations/dropbox.go) |
 | Integration with Google Drive | 🟡 | [WIP](https://github.com/ddvk/rmfakecloud/pull/241) |
 | Integration with OneDrive | ❌ |  |
 | Integration with WebDAV | ✅ | Nextcloud, Owncloud, ... |
 | Integration with FTP | ✅ |  |
 | Messaging integrations | ✅ |  |
-| [Messaging integration through webhook](https://ddvk.github.io/rmfakecloud/usage/integrations/#messaging-webhook) | ✅ |  |
+| [Messaging integration through webhook](https://hb9hil.github.io/rmfakecloud/usage/integrations/#messaging-webhook) | ✅ |  |
 | Calendar integration | ✅ | ICS currently supported
 | Messaging integration to Slack | 🟡 | Not directly, use a webhook with zapier/make/n8n |
 | Archive document to cloud | 🟡 | It works but the information is not saved |
-| [Passcode (PIN) reset](https://ddvk.github.io/rmfakecloud/usage/passcode-reset/) | ✅ | reMarkable 1 / reMarkable 2 only |
+| [Passcode (PIN) reset](https://hb9hil.github.io/rmfakecloud/usage/passcode-reset/) | ✅ | reMarkable 1 / reMarkable 2 only |
 | Document rendering in web interface | ❌ | [WIP](https://github.com/ddvk/rmfakecloud/issues/255) |
 
 
