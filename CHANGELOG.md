@@ -23,6 +23,7 @@ The first release of the curated `rmfakecloud` fork by @HB9HIL. I forked this pr
 #### Fixes
 - Pages without annotations are no longer dropped from the PDF export, so annotations stay on the right page ([ddvk#228](https://github.com/ddvk/rmfakecloud/issues/228)) (by @HB9HIL)
 - Pages inserted, deleted or moved on the tablet are reflected in the PDF export of annotated PDFs (by @HB9HIL)
+- Annotations on PDF forms are no longer covered by the form fields, the fields are flattened in the export (by @HB9HIL)
 - Stroke colors are rendered correctly, previously all strokes were black (by @HB9HIL)
 - Highlighter and shader strokes are semi-transparent (by @HB9HIL)
 - Notebook pages extended downwards are exported completely (by @HB9HIL)

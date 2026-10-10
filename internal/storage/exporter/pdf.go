@@ -71,6 +71,10 @@ func RenderPDF(a *MyArchive, w io.Writer) (err error) {
 	if err != nil {
 		return fmt.Errorf("can't read background pdf: %w", err)
 	}
+	background, err = flattenForms(ctx, background, conf)
+	if err != nil {
+		return fmt.Errorf("can't flatten form fields: %w", err)
+	}
 	dims, err := api.PageDims(ctx, background, conf)
 	if err != nil {
 		return fmt.Errorf("can't read background pdf: %w", err)
