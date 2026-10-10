@@ -1,12 +1,19 @@
 name: Docker image
 
+# Push to master: image tagged with its git describe and bleeding_edge.
 # Tag push vX.Y.Z: image X.Y.Z and latest.
 # Manual run: image tagged with the git describe of the selected branch.
 on:
   push:
+    branches:
+      - master
     tags:
       - 'v*'
   workflow_dispatch:
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -83,10 +90,11 @@ jobs:
         with:
           images: ${{ env.IMAGE }}
           flavor: |
-            latest=${{ github.event_name == 'workflow_dispatch' && 'false' || 'auto' }}
+            latest=${{ github.ref_type == 'tag' && 'auto' || 'false' }}
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.ref_type == 'branch' }}
+            type=raw,value=bleeding_edge,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
