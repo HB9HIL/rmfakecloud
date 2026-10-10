@@ -15,6 +15,7 @@ The first release of the curated `rmfakecloud` fork by @HB9HIL. I forked this pr
 - Updated go version and external modules to the latest versions (by @HB9HIL)
 - Replaced the unmaintained `rmapi` dependency with the archive and `.rm` decoding code from [ddvk/rmapi](https://github.com/ddvk/rmapi), which can also parse the v6 format (by @HB9HIL)
 - Replaced the commercial `unipdf` library with a small PDF renderer in pure Go, no cgo needed (by @HB9HIL)
+- Releases are built from this changelog, with binaries for Linux (amd64, arm64, armv7, armv6) and Windows (amd64). The Docker image moved to `ghcr.io/hb9hil/rmfakecloud` (by @HB9HIL)
 
 #### Features
 - PDF export of notebooks and annotated PDFs written with firmware 3.x (v6 format) (by @HB9HIL)

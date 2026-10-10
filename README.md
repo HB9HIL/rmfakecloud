@@ -56,6 +56,12 @@ See the [documentation](https://ddvk.github.io/rmfakecloud/remarkable/setup/) fo
 
 run `./dev.sh` which should start the UI and backend
 
+Releases: note the changes under `## [Unreleased]` in `CHANGELOG.md`, move them
+into a `## [X.Y.Z] - date` section and push the tag `vX.Y.Z`. The release
+workflow runs the tests, takes that section as the release notes, attaches
+binaries for Linux (amd64, arm64, armv7, armv6) and Windows (amd64) and pushes
+the multi-arch image `ghcr.io/hb9hil/rmfakecloud:X.Y.Z` (also tagged `latest`).
+
 ### Caveats/ WARNING
 
 - (applies when you don't have security, version <= 0.0.3) connecting to the api will delete all your files, unless you mark them as not synced `synced:false` prior to syncing (advisable just to disconnect, reconnect the cloud)

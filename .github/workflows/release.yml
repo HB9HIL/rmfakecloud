@@ -1,37 +1,139 @@
-name: Release
+name: Create release on tag push
 
 on:
   push:
     tags:
-        - 'v*.*.*'
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
 
 jobs:
-
-  build:
-    name: Build
-    runs-on: ubuntu-24.04
+  check:
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: ^1.23
-        id: go
+          go-version-file: go.mod
+      # The binary embeds ui/dist, a placeholder is enough to compile and test
+      - run: mkdir -p ui/dist && touch ui/dist/index.html
+      - run: go vet ./...
+      - run: go test -race ./...
+      - name: Extract release notes from CHANGELOG
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v ver="$version" '
+            /^## \[/ {
+              if (found) exit
+              if (index($0, "[" ver "]")) { found=1; next }
+            }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "::error::No changelog section found for version $version"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-notes
+          path: release_notes.md
 
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
+  ui:
+    needs: check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
-          run_install: false
-
-      - name: Build 
-        run: make all
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+      - uses: actions/setup-node@v7
         with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: ui/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ui-dist
+          path: ui/dist
+
+  build:
+    needs: ui
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { goos: linux, goarch: amd64, name: linux-amd64 }
+          - { goos: linux, goarch: arm64, name: linux-arm64 }
+          - { goos: linux, goarch: arm, goarm: '7', name: linux-armv7 }
+          - { goos: linux, goarch: arm, goarm: '6', name: linux-armv6 }
+          - { goos: windows, goarch: amd64, name: windows-amd64.exe }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: actions/download-artifact@v8
+        with:
+          name: ui-dist
+          path: ui/dist
+      - run: go build -trimpath -ldflags="-s -w -X main.version=${GITHUB_REF_NAME#v}" -o dist/rmfakecloud-${{ matrix.name }} ./cmd/rmfakecloud
+        env:
+          CGO_ENABLED: '0'
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          GOARM: ${{ matrix.goarm }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: rmfakecloud-${{ matrix.name }}
+          path: dist/rmfakecloud-${{ matrix.name }}
+
+  docker:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/hb9hil/rmfakecloud
+          tags: |
+            type=semver,pattern={{version}}
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          build-args: VERSION=${{ steps.meta.outputs.version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  release:
+    needs: [build, docker]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          pattern: rmfakecloud-*
+          merge-multiple: true
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-notes
+      - uses: softprops/action-gh-release@v3
+        with:
+          body_path: release_notes.md
           files: dist/*
-          generate_release_notes: true
