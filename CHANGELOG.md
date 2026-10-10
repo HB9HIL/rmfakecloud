@@ -1,12 +1,15 @@
-# 0.0.25
+# Changelog
 
-## Features
+All notable changes to this project are documented in this file.
 
-- Software compatibility with 3.20 (cdb45df0b8314e637b5cdb722b10f0b262d74f56)
-- Handle messaging integrations (a88aee6ea5ad846cd8aaab2bcbe2f82d2898e5f4)
-- [Webhook messaging integration](https://ddvk.github.io/rmfakecloud/usage/integrations/#messaging-webhook) (479887ee4b335cd99f8a4cb4afeb7577681a217b)
-- New option: `RMAPI_HWR_LANG_OVERRIDE` to override the language specified in myScript requests (#352)
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Internal change
+## [Unreleased]
 
-- Refactor hash function (#365)
+The first release of the curated `rmfakecloud` fork by @HB9HIL. I forked this project to fix some issues and make it easier to build and continue maintaining it. The original project is [here](https://github.com/ddvk/rmfakecloud). Unfortunately, it seems to have fallen into a deep sleep and the original author is barely responding to issues or PRs. I will try to keep this fork alive and up to date with the latest upstream changes. Big thanks to @ddvk for creating this project. I will do my very best to keep this fork alive and up to date.
+
+### Changes in this fork for now:
+
+#### Chore
+- Updated go version and external modules to the latest versions (by @HB9HIL)
