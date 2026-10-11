@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Features
+- New look for the web UI: a paper-like design, light and dark theme follow the system and can be switched (by @HB9HIL)
+
 #### Chore
+- The web UI is written in TypeScript and uses Tailwind CSS instead of Bootstrap and React Router for data loading (by @HB9HIL)
 - CI no longer cancels a running build on master when a new commit is pushed, so the `bleeding_edge` image always gets finished (by @HB9HIL)
+
+#### Fixes
+- "Select all" in the document list selects the documents for deleting (by @HB9HIL)
+- Screen sharing notices a dropped connection right away (by @HB9HIL)
 
 ## [0.3.3] - 2026-10-11
 

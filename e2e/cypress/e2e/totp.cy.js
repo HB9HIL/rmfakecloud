@@ -24,15 +24,14 @@ describe("totp", () => {
 
     // each code needs a newer time step than the one before (replay protection)
     cy.visit("/profile");
-    cy.get(".font-monospace").invoke("text").then((secret) => {
+    cy.get(".font-mono").invoke("text").then((secret) => {
       cy.task("totp", { secret, offset: -1 }).then((code) => {
         cy.get("input[name=code]").type(code);
       });
       cy.contains("button", "Enable").click();
       cy.contains("button", "Disable");
 
-      cy.get("#userMenu").click();
-      cy.contains("Log out").click();
+      cy.contains("button", "Log out").click();
       loginForm();
       cy.get("#code").type("000000");
       cy.contains("button", "Login").click();

@@ -34,7 +34,7 @@ services:
       API_URL: http://rmfakecloud:3000
     volumes:
       - ./ui:/src
-      # linux binaries (sass-embedded), kept apart from the host's node_modules
+      # native linux binaries (tailwind, swc, rolldown), kept apart from the host's node_modules
       - ui_node_modules:/src/node_modules
 
   mailpit:

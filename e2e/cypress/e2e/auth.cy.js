@@ -28,8 +28,7 @@ describe("auth", () => {
   it("logs out", () => {
     cy.login();
     cy.visit("/");
-    cy.get("#userMenu").click();
-    cy.contains("Log out").click();
+    cy.contains("button", "Log out").click();
     cy.visit("/documents");
     cy.location("pathname").should("eq", "/login");
   });

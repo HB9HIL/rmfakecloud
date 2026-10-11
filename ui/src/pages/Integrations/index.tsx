@@ -1,120 +1,75 @@
-import React, {useState} from "react";
-import useFetch from "../../hooks/useFetch";
-import Spinner from "../../components/Spinner";
-import {Alert, Button, Card, Container, Modal, Table} from "react-bootstrap";
-import IntegrationModal from "./IntegrationModal";
-import NewIntegrationModal from "./NewIntegrationModal";
-import apiService from "../../services/api.service";
+import { useState, type MouseEvent } from "react";
+import { useLoaderData, useRevalidator } from "react-router";
 import { toast } from "react-toastify";
-const integrationListUrl = "integrations";
 
-const NewIntegration = 1;
-const UpdateIntegration = 2;
-const Integrations = () => {
-  const [index, setIndex] = useState(0);
-  const { data: integrationList, error, loading } = useFetch(`${integrationListUrl}`, index);
-  const [ state, setState ] = useState({showModal: 0, modalIntegration: null});
-  const refresh = () =>{
-    setIndex(previous => previous+1)
-  }
+import { deleteIntegration, type listIntegrations } from "../../api";
+import { Button, Dialog } from "../../components/ui";
+import type { Integration } from "../../types";
+import IntegrationForm from "./IntegrationForm";
 
-  function openModal(index: number) {
-    if (!integrationList) return;
-    const integration = integrationList[index];
-    setState({
-      showModal: UpdateIntegration,
-      modalIntegration: integration,
-    });
-  }
-  function closeModal() {
-    setState({
-      showModal: 0,
-      modalIntegration: null,
-    });
-  }
+export default function Integrations() {
+  const integrations = useLoaderData<typeof listIntegrations>();
+  const revalidator = useRevalidator();
+  const [editing, setEditing] = useState<Integration | "new" | null>(null);
 
-  if (loading) {
-    return <Spinner />
-  }
+  const close = () => setEditing(null);
+  const saved = () => {
+    close();
+    revalidator.revalidate();
+  };
 
-  if (error) {
-    return (
-        <Alert variant="danger">
-            <Alert.Heading>An Error Occurred</Alert.Heading>
-            {`Error ${error.status}: ${error.statusText}`}
-        </Alert>
-    );
-  }
-
-  const newIntegration = () => {
-    setState({
-      showModal: NewIntegration,
-      modalIntegration: null
-    });
-  }
-
-  const onSave  = () => {
-    closeModal();
-    refresh();
-  }
-
-  const remove = async (e, id, name) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!window.confirm(`Are you sure you want to delete integration: ${name}?`))
-      return false
-
-    try{
-      await apiService.deleteintegration(id)
-      refresh()
-    } catch(e){
-        toast.error('Error:'+ e)
+  async function remove(e: MouseEvent, i: Integration) {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to delete integration: ${i.Name}?`)) return;
+    try {
+      await deleteIntegration(i.ID);
+      revalidator.revalidate();
+    } catch (err) {
+      toast.error(`Error: ${(err as Error).message}`);
     }
   }
 
   return (
-    <Container className="py-3">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3 className="mb-0">Integrations</h3>
-        <Button onClick={newIntegration}>New Integration</Button>
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h1 className="font-serif text-3xl">Integrations</h1>
+        <Button variant="primary" onClick={() => setEditing("new")}>New Integration</Button>
       </div>
-      <Card>
-        <Table striped bordered hover responsive className="mb-0">
-          <thead>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-line text-left text-xs tracking-wide text-muted uppercase">
+            <th className="py-2 pr-3 font-normal">Name</th>
+            <th className="pr-3 font-normal">Provider</th>
+            <th className="hidden pr-3 font-normal md:table-cell">ID</th>
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          {integrations.length === 0 && (
             <tr>
-              <th className="d-none d-md-table-cell">#</th>
-              <th className="d-none d-md-table-cell">IntegrationId</th>
-              <th>Name</th>
-              <th>Provider</th>
-              <th></th>
+              <td colSpan={4} className="py-10 text-center text-muted">No integrations yet.</td>
             </tr>
-          </thead>
-          <tbody>
-            {!integrationList.length && (
-              <tr>
-                <td colSpan={5} className="text-center">No integration</td>
-              </tr>
-            )}
-            {integrationList.map((i, index) => (
-              <tr key={i.ID} onClick={() => openModal(index)} style={{ cursor: "pointer" }}>
-                <td className="d-none d-md-table-cell">{index}</td>
-                <td className="d-none d-md-table-cell">{i.ID}</td>
-                <td>{i.Name}</td>
-                <td>{i.Provider}</td>
-                <td><Button size="sm" variant="danger" onClick={(e) => remove(e,i.ID,i.Name)}>Delete</Button></td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-        <Modal show={state.showModal === UpdateIntegration} onHide={closeModal} className="transparent-modal">
-          <IntegrationModal integration={state.modalIntegration} onSave={onSave} onClose={closeModal} headerText={`Change Integration: ${state.modalIntegration?.Name}`} />
-        </Modal>
-        <Modal show={state.showModal === NewIntegration} onHide={closeModal} className="transparent-modal">
-          <NewIntegrationModal onSave={onSave} onClose={closeModal} />
-        </Modal>
-      </Card>
-    </Container>
-  );
-};
+          )}
+          {integrations.map((i) => (
+            <tr key={i.ID} className="cursor-pointer border-b border-line hover:bg-line/30" onClick={() => setEditing(i)}>
+              <td className="py-2.5 pr-3 font-medium">{i.Name}</td>
+              <td className="pr-3 text-muted">{i.Provider}</td>
+              <td className="hidden pr-3 font-mono text-xs text-muted md:table-cell">{i.ID}</td>
+              <td className="text-right">
+                <Button size="sm" variant="danger" onClick={(e) => remove(e, i)}>Delete</Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-export default Integrations;
+      <Dialog
+        open={editing !== null}
+        onClose={close}
+        title={editing === "new" ? "New integration" : `Change integration: ${editing?.Name}`}
+      >
+        <IntegrationForm integration={editing === "new" || editing === null ? undefined : editing} onDone={saved} onCancel={close} />
+      </Dialog>
+    </div>
+  );
+}

@@ -7,21 +7,21 @@ describe("mobile", () => {
 
   it("collapses the navigation", () => {
     cy.visit("/");
-    cy.contains(".nav-link", "Documents").should("not.be.visible");
-    cy.get(".navbar-toggler").click();
-    cy.contains(".nav-link", "Documents").click();
+    cy.contains("header nav a", "Documents").should("not.be.visible");
+    cy.get("button[aria-label=Menu]").click();
+    cy.contains("header nav a", "Documents").click();
 
     cy.location("pathname").should("eq", "/documents");
-    cy.contains(".nav-link", "Documents").should("not.be.visible");
+    cy.contains("header nav a", "Documents").should("not.be.visible");
   });
 
   it("opens the document tree from the side", () => {
     cy.visit("/documents");
-    cy.get(".offcanvas-md").should("not.be.visible");
+    cy.get("#folders").should("not.be.visible");
     cy.contains("button", "Folders").click();
-    cy.get(".offcanvas-md").should("be.visible");
-    cy.get(".offcanvas-md").contains("[role=treeitem]", "My Files").click();
-    cy.get(".offcanvas-md").should("not.be.visible");
+    cy.get("#folders").should("be.visible");
+    cy.get("#folders").contains("[role=treeitem]", "My Files").click();
+    cy.get("#folders").should("not.be.visible");
 
     cy.get("input[type=file]").selectFile("cypress/fixtures/test.pdf", { force: true });
     cy.contains(".filelist-item", "test").click();
