@@ -28,7 +28,7 @@ export default function Header() {
   return (
     <header className="relative border-b border-line">
       <div className="flex h-14 items-center gap-6 px-4">
-        <Link to="/" className="font-serif text-xl tracking-tight">rmfakecloud</Link>
+        <Link to="/documents" className="font-serif text-xl tracking-tight">rmfakecloud</Link>
 
         {user && (
           // stacked below the bar on phones, inline from md upwards
@@ -40,6 +40,7 @@ export default function Header() {
             ))}
             {isAdmin(user) && <NavLink to="/admin" className={linkClass} onClick={close}>Admin</NavLink>}
             <div className="mt-2 flex items-center gap-3 border-t border-line pt-3 md:mt-0 md:ml-auto md:border-0 md:pt-0">
+              <NavLink to="/help" className={linkClass} onClick={close}>Help</NavLink>
               <NavLink id="userMenu" to="/profile" className={linkClass} onClick={close}>{user.UserID}</NavLink>
               <Button variant="ghost" size="sm" onClick={() => { close(); logout(); }}>Log out</Button>
             </div>

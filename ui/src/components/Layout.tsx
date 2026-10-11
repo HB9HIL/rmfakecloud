@@ -56,7 +56,7 @@ export function NotFound() {
   return (
     <div className="px-4 py-16 text-center">
       <p className="mb-4 font-serif text-2xl">Page Not Found.</p>
-      <Link to="/" className="text-muted underline underline-offset-3 hover:text-ink">Back to the start page</Link>
+      <Link to="/documents" className="text-muted underline underline-offset-3 hover:text-ink">Back to your documents</Link>
     </div>
   );
 }

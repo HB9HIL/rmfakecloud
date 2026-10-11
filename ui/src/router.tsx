@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, redirect } from "react-router";
 
 import * as api from "./api";
 import { requireAdmin, requireUser } from "./auth";
@@ -6,7 +6,7 @@ import { NotFound, Protected, Public, RouteError, Shell } from "./components/Lay
 import Admin from "./pages/Admin";
 import Connect from "./pages/Connect";
 import Documents from "./pages/Documents";
-import Home from "./pages/Home";
+import Help from "./pages/Help";
 import Integrations from "./pages/Integrations";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
@@ -23,7 +23,8 @@ export const router = createBrowserRouter([
           {
             errorElement: <RouteError />,
             children: [
-              { index: true, element: <Home /> },
+              { index: true, loader: () => redirect("/documents") },
+              { path: "help", element: <Help /> },
               {
                 path: "documents/:itemId?",
                 element: <Documents />,

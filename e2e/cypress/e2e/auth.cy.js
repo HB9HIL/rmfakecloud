@@ -5,10 +5,10 @@ describe("auth", () => {
     cy.get("footer").should("not.exist");
   });
 
-  it("shows the home page after login", () => {
+  it("shows the documents after login", () => {
     cy.login();
     cy.visit("/");
-    cy.contains("h1", "Welcome to your own reMarkable Cloud!");
+    cy.location("pathname").should("eq", "/documents");
     cy.get("#userMenu").should("have.text", "admin");
     cy.contains("footer", /^rmfakecloud \S+$/);
   });

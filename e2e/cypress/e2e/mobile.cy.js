@@ -6,7 +6,7 @@ describe("mobile", () => {
   });
 
   it("collapses the navigation", () => {
-    cy.visit("/");
+    cy.visit("/help");
     cy.contains("header nav a", "Documents").should("not.be.visible");
     cy.get("button[aria-label=Menu]").click();
     cy.contains("header nav a", "Documents").click();
@@ -35,7 +35,7 @@ describe("mobile", () => {
 
   it("has no horizontal overflow", () => {
     const pages = [
-      ["/", "h1"],
+      ["/help", "h1"],
       ["/integrations", "table"],
       ["/admin", "table"],
       ["/connect", "h1"],
