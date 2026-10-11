@@ -5,38 +5,19 @@ rmfakecloud is a clone of the cloud sync the remarkable tablet is using, in case
 ## Features
 
 * File synchronization (compatible with revisions 1.0 and 1.5)
-* Integrations with external files sources (using webdav or with a dedicated directory on local file system, instead of Google Drive and Dropbox)
+* [Integrations](usage/integrations.md) with external file sources: WebDAV, FTP, Dropbox, a local directory, ICS calendars and a messaging webhook
 * Send document by email
 * Handwriting recognition
 * Screen sharing
-* Passcode (PIN) reset approval (reMarkable 1 / reMarkable 2 only)
+* [Passcode (PIN) reset](usage/passcode-reset.md) approval (reMarkable 1 / reMarkable 2 only)
+* [Read on reMarkable](browser-extension.md) browser extension
 
-It comes with a very basic web interface that let you:
+It comes with a web interface that lets you:
 
-* Register user
-* Connect to your account
-* Generate one time code for device registration
-* View synchronized files
-* Download PDF of the synchronized files
-* Upload new documents
-
-Please note that this project is under development and there are many features that requires to tweak configuration files directly.
-
-## Wish List
-
-Here is a list of tasks that still need to be accomplished:
-
-- UI:
-    * specify folder on upload
-    * add/remove users
-    * move files around
-    * rename files
-    * realtime notifications
-    * document preview
-    * archive / restore documents
-    * share files between users
-    * refactoring
-    * sent emails history
-- add message broker
-- add db
-- add blob storage
+* Generate the one time code to connect a device
+* Browse, upload and delete documents, create folders
+* Download documents as PDF, including your annotations
+* Manage your integrations
+* Watch a screen share
+* Change your password and enable [two-factor login](usage/userprofile.md#two-factor-login)
+* Manage users (admins)

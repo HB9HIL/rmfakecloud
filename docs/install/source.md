@@ -6,7 +6,7 @@ Dependencies
 
 To be able to compile from source, you'll need the following dependencies:
 
-* [nodejs](https://nodejs.org) version 18 or newer
+* [nodejs](https://nodejs.org) version 26 or newer
 * [go](https://go.dev/) version 1.26 or newer
 * make
 

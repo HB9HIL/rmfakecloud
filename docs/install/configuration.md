@@ -8,7 +8,12 @@ The configuration is made through environment variables.
 | `STORAGE_URL`     | It controls whether file upload/download goes through the local proxy or to an external server. It's the full address (protocol, host, port, path) of rmfakecloud **as visible from the tablet**, especially if the host is behind a reverse proxy or in a container. Example: `http://192.168.2.3:3000` (default: `https://local.appspot.com`), on SW 3.15 only https without port will work |
 | `PORT`            | listening port number (default: 3000) |
 | `DATADIR`         | Set data/files directory (default: `data/` in current dir) |
+| `TLS_CERT`        | Path to a certificate, together with `TLS_KEY` rmfakecloud serves HTTPS itself |
+| `TLS_KEY`         | Path to the certificate's private key |
 | `LOGLEVEL`        | Set the log verbosity. Default is **info**, set to **debug** for more logging or **warn**, **error** for less |
+| `LOGFORMAT`       | `json` for JSON logs, default is text |
+| `RM_LOGFILE`      | Additionally write the log to this file |
+| `OPEN_REGISTRATION` | Allow creating users via `POST /ui/api/register`, only from localhost (default: false) |
 | `RM_HTTPS_COOKIE` | For the UI, force cookies to be available only via https |
 | `RM_TRUST_PROXY`  | Trust the proxy for client ip addresses (X-Forwarded-For/X-Real-IP) default false |
 | `HASH_SCHEMA_VERSION` | Hash tree schema version: "3" or "4" (default: 3) |

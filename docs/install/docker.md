@@ -4,7 +4,7 @@ You can evaluate the program with:
 docker run -it --rm -p 3000:3000 ghcr.io/hb9hil/rmfakecloud
 ```
 
-To setup it for normal usage, you'll use need to setup a volume to store user configuration and documents:
+For normal usage, you need a volume to store user configuration and documents:
 
 ```sh
 docker run -it --rm -p 3000:3000 -p 8883:8883 -v ./data:/data -e JWT_SECRET_KEY='something' ghcr.io/hb9hil/rmfakecloud
@@ -16,7 +16,6 @@ Explore others configuration variables on [the dedicated page](configuration.md)
 ## docker-compose file
 
 ```yaml
-version: "3"
 services:
   rmfakecloud:
     image: ghcr.io/hb9hil/rmfakecloud

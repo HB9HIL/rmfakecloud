@@ -140,7 +140,6 @@ After you installed the proxy, you will need to login to your account on your de
 2. Click on `Setup Account`.
 3. On your main computer:
     1. Login to the rmfakecloud Web UI (if no proxy used, the same as the `STORAGE_URL` value in the server configuration).
-    2. Press the `Code` link in the menu.
-    3. Press the `Generate Code` button.
-4. Enter the shown code on your device.
+    2. Open `Connect` in the menu, it shows a one time code.
+4. Enter the code on your device.
 5. To check that sync is working correctly. Go to `Menu > Storage` and press `Check Sync`.

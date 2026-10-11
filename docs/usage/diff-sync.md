@@ -6,14 +6,13 @@ conflicts.
 !!! note
     This feature is available since rmfakecloud v0.0.5.
 
-In order to use this feature, you'll need to update your user to activate it:
+New users use it by default. Users created before v0.0.5 need to activate it:
 
 ```sh
-rmfakecloud setuser -u ddvk -a -s
+rmfakecloud setuser -u ddvk -s
 ```
 
-The `-a` is to let/set the user admin: as the tool will remove the admin
-permission if not set.
+Add `-a` for an admin: `setuser` removes the admin permission if it is not set.
 
 You'll then need to reconnect on your device to apply the settings, and a full
 resync will automatically begin.
@@ -80,10 +79,10 @@ and use `git` to explore the differences referenced in the two files:
 This utility can relink in the root tree a non-deleted file.
 
 ```
-DATA_DIR=/var/lib/rmfakecloud ./relink15 -user ddvk -root-hash 1c0ee6fb7fde7d09dd25b954dd9f23f950d9e25f1fbc661ca18aebf40bb14a00 "Notebook 42" "My calendar.pdf"
+DATADIR=/var/lib/rmfakecloud ./relinkfile15 -user ddvk -root-hash 1c0ee6fb7fde7d09dd25b954dd9f23f950d9e25f1fbc661ca18aebf40bb14a00 "Notebook 42" "My calendar.pdf"
 ```
 
-`DATA_DIR` is the same option used by `rmfakecloud`. If you don't use it with
+`DATADIR` is the same option used by `rmfakecloud`. If you don't use it with
 `rmfakecloud`, make sure you are in the same directory as when you start
 `rmfakecloud`: you should have a `data/` directory.
 
@@ -97,7 +96,6 @@ given by `history2git15` in `doctree` (or as `visibleName` in `tree`). This does
 handle directories hierarchy at the time of writing: it only matches the
 filename. You need to make sure the parent directory still exists (as we said
 the hierarchy is handle by metadata, not by indexes).
-=======
 ## How does it work?
 
 All files are saved with a sha256 name in the user `sync` directory. File can be
