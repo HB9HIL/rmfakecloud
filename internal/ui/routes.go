@@ -38,7 +38,7 @@ func (app *ReactAppWrapper) RegisterRoutes(router *gin.Engine) {
 	r.POST("register", app.register)
 	r.POST("login", app.login)
 	r.GET("logout", func(c *gin.Context) {
-		c.SetCookie(cookieName, "/", -1, "", "", false, true)
+		c.SetCookie(cookieName, "", -1, "/", "", app.cfg.HTTPSCookie, true)
 		c.Status(http.StatusOK)
 	})
 	//with authentication
