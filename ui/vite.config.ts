@@ -5,16 +5,19 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   build: {
-    rollupOptions: {
-      // external:["pdfjs-dist"],
+    rolldownOptions: {
       output: {
-        manualChunks: function (id) {
-          // console.log(id);
-          if (id.includes("node_modules")) {
-            if (id.includes("pdf")) return "pdf";
-            if (id.includes("react")) return "react";
-            return "vendor";
-          }
+        codeSplitting: {
+          groups: [
+            {
+              name(id) {
+                if (!id.includes("node_modules")) return null;
+                if (id.includes("pdf")) return "pdf";
+                if (id.includes("react")) return "react";
+                return "vendor";
+              },
+            },
+          ],
         },
       },
     },
@@ -22,12 +25,11 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        api: "modern-compiler",
         silenceDeprecations: [
-          "mixed-decls",
           "color-functions",
           "global-builtin",
           "import",
+          "if-function",
         ],
       },
     },
