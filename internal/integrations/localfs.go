@@ -20,6 +20,11 @@ type localFS struct {
 	rootPath string
 }
 
+// cleanPath anchors p at "/" so ".." cannot leave the root path
+func cleanPath(p string) string {
+	return path.Clean("/" + p)
+}
+
 // newLocalFS localfs integration
 func newLocalFS(i model.IntegrationConfig) *localFS {
 	return &localFS{
@@ -62,7 +67,7 @@ func (d *localFS) List(folder string, depth int) (*messages.IntegrationFolder, e
 		response.Name = path.Base(folder)
 	}
 
-	startPath := path.Clean(folder)
+	startPath := cleanPath(folder)
 
 	log.Infof("[localfs] query for '%s' depth %d: ", startPath, depth)
 
@@ -95,7 +100,7 @@ func (d *localFS) Download(fileID string) (io.ReadCloser, int64, error) {
 		return nil, 0, err
 	}
 
-	localPath := path.Join(d.rootPath, path.Clean(decoded))
+	localPath := path.Join(d.rootPath, cleanPath(decoded))
 	log.Infof("[localfs] getting local file %s", localPath)
 
 	st, err := os.Stat(localPath)
@@ -115,8 +120,7 @@ func (d *localFS) Upload(folderID, name, fileType string, reader io.ReadCloser) 
 			return
 		}
 	}
-	//TODO: more cleanup and checks
-	filePath := path.Clean(path.Join(folder, name+"."+fileType))
+	filePath := cleanPath(path.Join(folder, name+"."+fileType))
 	log.Trace(loggerfs, "Cleaned: ", filePath)
 
 	fullPath := path.Join(d.rootPath, filePath)
