@@ -2,70 +2,29 @@ import Container from "react-bootstrap/Container";
 
 const Home = () => {
   return (
-    <Container fluid>
+    <Container className="py-3">
       <main>
         <h1>Welcome to your own reMarkable Cloud!</h1>
-        <h2>About</h2>
         <p>
-          This software is an unofficial replacement for the proprietary
-          reMarkable Cloud.  In case you want to sync/backup your files
-          and have full control of the hosting environment, this is the
-          software for you.
-        </p>
-        <p>
-          It's is still a work in progress being, actively maintained over
+          rmfakecloud is an unofficial replacement for the proprietary
+          reMarkable Cloud, to sync and back up your files on a server you
+          control. It is actively maintained
           on <a href="https://github.com/hb9hil/rmfakecloud">GitHub</a>.
         </p>
         <h2>Tips</h2>
         <ul>
           <li>
-            <p>
-              You can use <a href="https://github.com/ddvk/rmapi">rmapi</a> for managing files,
-              just specify the URL of your instance with the RMAPI_HOST variable like
-              so: <code>RMAPI_HOST=https://rmfakecloud.example.com rmapi</code>
-            </p>
-            <ul>
-              <li>
-                <p>
-                  Do note that the original project is now unmaintained. You should consider
-                  using <a href="https://github.com/ddvk/rmapi">this fork</a> instead.
-                </p>
-              </li>
-            </ul>
+            Manage files with <a href="https://github.com/ddvk/rmapi">rmapi</a> by
+            pointing it to this instance: <code>RMAPI_HOST=https://rmfakecloud.example.com rmapi</code>
           </li>
           <li>
-            <p>
-              Check out the online <a href="https://ddvk.github.io/rmfakecloud/">documentation</a> to
-              learn more about the configuration options. Also read the README
-            </p>
+            The <a href="https://hb9hil.github.io/rmfakecloud/">documentation</a> covers
+            the configuration and the Read on reMarkable extension, the <a href="https://github.com/hb9hil/rmfakecloud/blob/master/README.md">README</a> the
+            current state of the project.
           </li>
           <li>
-            <p>
-              You should also read the <a href="https://github.com/hb9hil/rmfakecloud/blob/master/README.md">README</a>,
-              to see the current status of the project and notes from the developers.
-            </p>
-          </li>
-          <li>
-            <p>
-              We support the Read on reMarkable Extension. Read more about it in the online documentation.
-            </p>
-          </li>
-          <li>
-            <p>
-              Documents will be uploaded to the selected (highlighted) directory.
-            </p>
-            <ul>
-              <li>
-                <p>
-                  Select directories by clicking on them.
-                </p>
-              </li>
-              <li>
-                <p>
-                  Clicking on selected directories again will open or close them respectively.
-                </p>
-              </li>
-            </ul>
+            Uploads go to the selected folder in Documents. Click a folder to
+            select it, click it again to open or close it.
           </li>
         </ul>
       </main>

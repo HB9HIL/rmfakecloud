@@ -9,11 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Chore
 - Cypress runs in Chrome instead of the deprecated Electron (by @HB9HIL)
+- Cleaned up the styles and page layouts of the web UI (by @HB9HIL)
+- Cypress tests for the web UI on a phone (by @HB9HIL)
 
 #### Fixes
 - Concurrent sync requests wait for the root lock instead of failing with 500 (by @HB9HIL)
 - The cached sync tree is written atomically, a crash no longer leaves it truncated (by @HB9HIL)
 - The PDF export uses the exact stroke colors of newer firmware (by @HB9HIL)
+- The web UI works on mobile devices, the document tree slides in from the side (by @HB9HIL)
 
 ## [0.2.1] - 2026-10-11
 

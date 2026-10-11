@@ -1,23 +1,18 @@
 import Container from "react-bootstrap/Container";
-import Stack from "react-bootstrap/Stack";
 import { useAuthState } from "../../common/useAuthContext";
 
 import ResetPassword from "./ResetPassword";
 
-const Home = () => {
+const Profile = () => {
   const { state: { user } } = useAuthState();
   return (
-    <Container fluid>
-      <Stack>
-        <div>
-          {user.scopes === "sync15" && (<span>Using sync 15</span>)}
-        </div>
-        <div>
-          <ResetPassword />
-        </div>
-      </Stack>
+    <Container className="py-3">
+      {user.scopes === "sync15" && (<p>Using sync 15</p>)}
+      <div className="col-md-6">
+        <ResetPassword />
+      </div>
     </Container>
   );
 };
 
-export default Home;
+export default Profile;

@@ -6,7 +6,6 @@ import { NavLink } from "react-router";
 
 const NavigationBar = () => {
   const { state:{user}, dispatch } = useAuthState();
-
   function handleLogout(e) {
     logout(dispatch);
   }
@@ -15,53 +14,39 @@ const NavigationBar = () => {
     return user && user.Roles && user.Roles[0] === "Admin";
   }
   return (
-    <Navbar className="sticky-top">
+    <Navbar expand="md" collapseOnSelect>
       <Container fluid>
-        <Navbar.Brand>
-          <Nav.Link as={NavLink} to="/">
-            rmfakecloud
-          </Nav.Link>
+        <Navbar.Brand as={NavLink} to="/">
+          rmfakecloud
         </Navbar.Brand>
-        <Navbar.Toggle />
         {user && (
           <>
+            <Navbar.Toggle />
             <Navbar.Collapse>
               <Nav>
-                {" "}
-                <Nav.Item>
-                  <Nav.Link as={NavLink} to="/documents">
-                    Documents
+                <Nav.Link as={NavLink} to="/documents" eventKey="/documents">
+                  Documents
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="/integrations" eventKey="/integrations">
+                  Integrations
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="/connect" eventKey="/connect">
+                  Connect
+                </Nav.Link>
+                <Nav.Link as={NavLink} to="/screenshare" eventKey="/screenshare">
+                  Screen Share
+                </Nav.Link>
+                {isAdmin() && (
+                  <Nav.Link as={NavLink} to="/admin" eventKey="/admin">
+                    Admin
                   </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link as={NavLink} to="/integrations">
-                    Integrations
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link as={NavLink} to="/connect">
-                    Connect
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link as={NavLink} to="/screenshare">
-                    Screen Share
-                  </Nav.Link>
-                </Nav.Item>
-				{ isAdmin() &&
-
-					<Nav.Item>
-					  <Nav.Link as={NavLink} to="/admin">
-						Admin	
-					  </Nav.Link>
-					</Nav.Item>
-				}
+                )}
               </Nav>
               <Nav className="ms-auto">
                 <NavDropdown id="userMenu" title={user.UserID} align="end">
-                  <NavDropdown.Item as={NavLink} to="/profile">Profile</NavDropdown.Item>
+                  <NavDropdown.Item as={NavLink} to="/profile" eventKey="/profile">Profile</NavDropdown.Item>
                   <NavDropdown.Divider />
-                  <NavDropdown.Item as={Button} onClick={handleLogout}>Log out</NavDropdown.Item>
+                  <NavDropdown.Item as={Button} eventKey="logout" onClick={handleLogout}>Log out</NavDropdown.Item>
                 </NavDropdown>
               </Nav>
             </Navbar.Collapse>

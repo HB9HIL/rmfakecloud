@@ -19,8 +19,6 @@ import Admin from "./pages/Admin";
 import ScreenShare from "./pages/ScreenShare";
 import NoMatch from "./pages/404";
 
-import "./App.scss"
-
 import { pdfjs } from "react-pdf";
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -37,10 +35,10 @@ export default function App() {
     <>
       <AuthProvider>
         <Router>
-          <div style={{display: "flex", flexDirection: "column", height: "100%"}}>
+          <div className="app">
             <Navigationbar />
             <PasscodeResets />
-            <div style={{flex: "1 1 auto", minHeight: 0, overflow: "hidden"}}>
+            <div className="app-main">
               <Routes>
                 <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
                 <Route path="/documents/:itemId?" element={<PrivateRoute><Documents /></PrivateRoute>} />

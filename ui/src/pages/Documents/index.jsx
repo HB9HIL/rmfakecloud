@@ -2,11 +2,11 @@ import DocumentTree from "./Tree";
 import apiservice from "../../services/api.service"
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, CloseButton } from "react-bootstrap";
 import File from "./File";
 import Folder from "./Folder";
 import Navbar from 'react-bootstrap/Navbar';
-import { BsSearch } from "react-icons/bs";
+import { BsSearch, BsFolder2Open } from "react-icons/bs";
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
@@ -23,6 +23,7 @@ export default function DocumentList() {
   const [entries, setEntries] = useState([])
   const [initialSelectionSet, setInitialSelectionSet] = useState(false);
   const [treeHeight, setTreeHeight] = useState(700);
+  const [showTree, setShowTree] = useState(false);
 
   const { itemId } = useParams();
   const navigate = useNavigate();
@@ -59,6 +60,7 @@ export default function DocumentList() {
   // select from tree. node must extend NodeApi from react-arborist
   const onSelect = (node) => {
     setSelected(node);
+    setShowTree(false);
     toggleNode(node);
 
     // Update URL with selected item ID
@@ -227,30 +229,42 @@ export default function DocumentList() {
   }, [entries, itemId, initialSelectionSet]);
 
   return (
-    <Container fluid style={{height: "100%", display: "flex", flexDirection: "column", overflow: "hidden", padding: "25px 0 20px 0"}}>
-        <Row style={{flex: "1 1 auto", minHeight: 0}}>
-          <Col md={4} style={{display: "flex", flexDirection: "column", height: "100%"}}>
-            <Navbar style={{flexShrink: 0}}>
-              <div className={`${styles.stretch} ${styles.userid}`}>{user.UserID}</div>
-              <Button variant="outline" onClick={() => { setShowSearch(!showSearch); setTerm("") }}><BsSearch/></Button>
-            </Navbar>
+    <Container fluid className={styles.layout}>
+        <Row className={styles.row}>
+          <Col md={4} className={styles.treeCol}>
+            {/* inline from md upwards, a slide-in panel below */}
+            <div className={`offcanvas-md offcanvas-start ${showTree ? "show" : ""} ${styles.treePanel}`}>
+              <div className="offcanvas-header">
+                <h5 className="offcanvas-title">Folders</h5>
+                <CloseButton onClick={() => setShowTree(false)} />
+              </div>
+              <div className={`offcanvas-body ${styles.treeBody}`}>
+                <Navbar className="flex-shrink-0">
+                  <div className={`${styles.stretch} ${styles.userid}`}>{user.UserID}</div>
+                  <Button variant="outline" onClick={() => { setShowSearch(!showSearch); setTerm("") }}><BsSearch/></Button>
+                </Navbar>
 
-            {showSearch && <div style={{flexShrink: 0}}>
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  <BsSearch />
-                </InputGroup.Text>
+                {showSearch && <div className="flex-shrink-0">
+                  <InputGroup className="mb-3">
+                    <InputGroup.Text>
+                      <BsSearch />
+                    </InputGroup.Text>
 
-                <Form.Control autoFocus size="sm" type="text" value={term} onChange={(e) => { setTerm(e.currentTarget.value); }} />
-              </InputGroup>
-            </div>}
+                    <Form.Control autoFocus size="sm" type="text" value={term} onChange={(e) => { setTerm(e.currentTarget.value); }} />
+                  </InputGroup>
+                </div>}
 
-            <div ref={treeContainerRef} className={styles.treeContainer} style={{flex: "1 1 auto", minHeight: 0, overflow: "auto"}}>
-              <DocumentTree selection={selected} onSelect={onSelect} treeRef={treeRef} term={term} entries={entries} height={treeHeight} />
+                <div ref={treeContainerRef} className={styles.treeContainer}>
+                  <DocumentTree selection={selected} onSelect={onSelect} treeRef={treeRef} term={term} entries={entries} height={treeHeight} />
+                </div>
+              </div>
             </div>
           </Col>
-          <Col md={8} style={{display: "flex", flexDirection: "column", height: "100%"}}>
-            <div style={{flex: "1 1 auto", minHeight: 0, overflow: "auto"}}>
+          <Col md={8} className={styles.contentCol}>
+            <Button size="sm" variant="outline-secondary" className="d-md-none align-self-start mb-2" onClick={() => setShowTree(true)}>
+              <BsFolder2Open /> Folders
+            </Button>
+            <div className={styles.content}>
               {selected && selected.isLeaf && <File file={selected} onSelect={onSelect} />}
               {selected && !selected.isLeaf && <Folder selection={selected} onSelect={onSelect} onUpdate={onUpdate} counter={counter} />}
             </div>

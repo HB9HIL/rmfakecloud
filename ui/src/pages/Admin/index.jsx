@@ -1,15 +1,12 @@
 import Container from "react-bootstrap/Container";
-import Stack from "react-bootstrap/Stack";
 import UserList from "./UserList";
 
-const Home = () => {
+const Admin = () => {
   return (
-    <Container fluid>
-      <Stack>
-          <UserList />
-      </Stack>
+    <Container className="py-3">
+      <UserList />
     </Container>
   );
 };
 
-export default Home;
+export default Admin;

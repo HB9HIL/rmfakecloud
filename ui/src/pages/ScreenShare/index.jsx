@@ -479,7 +479,7 @@ export default function ScreenShare() {
 
 
   return (
-    <Container className="mt-4">
+    <Container className="py-3">
       {status === STATUS.ERROR && (
         <Alert variant="info">
           {errorMsg}

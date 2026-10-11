@@ -9,7 +9,9 @@
 }
 
 .formContainer {
-  width: 300px;
+  width: 100%;
+  max-width: 320px;
+  padding: 0 1rem;
 }
 
 .error {

@@ -30,9 +30,10 @@ const Login = () => {
   return (
     <div className={styles.container}>
       <div className={styles.formContainer}>
+        <h3 className="mb-4">Log in</h3>
         {errorMessage ? <p className={styles.error}>{errorMessage}</p> : null}
 
-        <Form>
+        <Form onSubmit={handleLogin}>
           <Form.Group className="mb-3">
             <Form.Label htmlFor="username">Username</Form.Label>
             <Form.Control
@@ -59,7 +60,7 @@ const Login = () => {
               />
           </Form.Group>
 
-          <Button type="submit" onClick={handleLogin} disabled={loading}>
+          <Button type="submit" disabled={loading}>
             Login
           </Button>
         </Form>

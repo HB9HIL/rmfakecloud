@@ -9,14 +9,6 @@ import apiservice from "../../services/api.service"
 import NameTag from "../../components/NameTag"
 
 import { pdfjs, Document, Page } from "react-pdf";
-// import 'react-pdf/dist/Page/AnnotationLayer.css';
-// import 'react-pdf/dist/Page/TextLayer.css';
-// import 'react-pdf/dist/Page/TextLayer.css';
-//pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.js"
-// pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-//   'pdfjs-dist/build/pdf.worker.min.mjs',
-//   import.meta.url,
-// ).toString(); 
 
 
 export default function FileViewer({ file, onSelect }) {
@@ -52,7 +44,8 @@ export default function FileViewer({ file, onSelect }) {
 		});
 
 		resizeObserver.observe(parent.current);
-	});
+		return () => resizeObserver.disconnect();
+	}, []);
 
   // TODO: add loading and error handling
   const triggerDownload = (blob, filename) => {

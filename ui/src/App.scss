@@ -1,13 +1,11 @@
 @import "./theme.scss";
-
-// TODO: Remove styles which are not meant to be global into module files
+@import "bootstrap/scss/bootstrap";
 
 :root {
-    height:100%;
-    --bs-code-color: #{$action} !important;
-    --bs-body-bg: #{$background1} !important;
-    --bs-border-color: #{$foreground2} !important;
-    --bs-tertiary-bg: #{$background1} !important;
+    --bs-code-color: #{$action};
+    --bs-body-bg: #{$background1};
+    --bs-border-color: #{$foreground2};
+    --bs-tertiary-bg: #{$background1};
 
     .dropdown-item {
         --bs-dropdown-link-hover-bg: #{$background2};
@@ -33,7 +31,7 @@
         --bs-btn-active-border-color: #{$action};
 
         --bs-btn-active-shadow: none;
-        --bs-btn-focus-shadow-rgb: none; // #{$action-rgb};
+        --bs-btn-focus-shadow-rgb: none;
     }
 
     .btn-danger {
@@ -50,7 +48,7 @@
         --bs-btn-active-border-color: #{$reject};
 
         --bs-btn-active-shadow: none;
-        --bs-btn-focus-shadow-rgb: none; // #{$action-rgb};
+        --bs-btn-focus-shadow-rgb: none;
 
         &:hover, &:focus {
             opacity: 0.7;
@@ -58,51 +56,48 @@
     }
 }
 
+html, body, #root {
+    height: 100%;
+}
+
+// the navbar stays on top, every page scrolls below it
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.app-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.app > nav {
+    border-bottom: 1px solid $background2;
+}
+
 .form-control:focus {
-    border-color: $action !important;
-    box-shadow: none !important; // 0 0 0 0.25rem rgba(var(--bs-btn-focus-shadow-rgb), 10%) !important;
+    border-color: $action;
+    box-shadow: none;
 }
 
 .card input {
     margin-bottom: 0.5em;
 }
 
-#root > nav { 
-    backdrop-filter: blur(12px);
-    background-color: $background1;
-}
-
-html, body {
-    height: 100%;
-    overflow: hidden;
-    background-color: $background2;
-}
-
-#root {
-    height: 100%;
-}
-
 *:disabled {
     color: $foreground2 !important;
     background-color: $background2 !important;
-
     opacity: 0.7 !important;
 }
 
-div[role="button"] > p {
-    margin: 1em;
-}
-
-.vstack {
-    gap: 2em;
-}
-
-canvas {
-  margin: auto;
-  width: auto !important;
-  height: auto !important;
-  max-width: 100%;
-  max-height: calc(100vh - 230px);
+.react-pdf__Page canvas {
+    margin: auto;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100%;
+    max-height: calc(100vh - 230px);
 }
 
 code {
@@ -110,17 +105,8 @@ code {
     background-color: $background1;
 }
 
-@media (max-width: 768px) {
-  .documents-tree {
-    max-height: 25vh !important;
-  }
-}
-
-.container-fluid {
-  box-sizing: border-box;
-  margin: 0 50px;
-  max-width: none;
-  width: calc(100vw - 100px) !important;
+.transparent-modal .modal-content {
+    background-color: transparent;
 }
 
 .documents-tree {
@@ -268,8 +254,6 @@ code {
 main h2 {
     padding: 0.5em 0;
 }
-
-@import "bootstrap/scss/bootstrap";
 
 .flex-spacer {
   flex: 1;

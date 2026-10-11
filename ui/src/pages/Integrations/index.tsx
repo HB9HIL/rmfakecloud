@@ -73,17 +73,20 @@ const Integrations = () => {
   }
 
   return (
-    <Container>
-      <h3>Integrations</h3>
+    <Container className="py-3">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h3 className="mb-0">Integrations</h3>
+        <Button onClick={newIntegration}>New Integration</Button>
+      </div>
       <Card>
-        <Table striped bordered hover className="mb-0">
+        <Table striped bordered hover responsive className="mb-0">
           <thead>
             <tr>
-              <th>#</th>
-              <th>IntegrationId</th>
+              <th className="d-none d-md-table-cell">#</th>
+              <th className="d-none d-md-table-cell">IntegrationId</th>
               <th>Name</th>
               <th>Provider</th>
-              <th><Button onClick={newIntegration}>New Integration</Button></th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -94,11 +97,11 @@ const Integrations = () => {
             )}
             {integrationList.map((i, index) => (
               <tr key={i.ID} onClick={() => openModal(index)} style={{ cursor: "pointer" }}>
-                <td>{index}</td>
-                <td>{i.ID}</td>
+                <td className="d-none d-md-table-cell">{index}</td>
+                <td className="d-none d-md-table-cell">{i.ID}</td>
                 <td>{i.Name}</td>
                 <td>{i.Provider}</td>
-                <td><Button variant="danger" onClick={(e) => remove(e,i.ID,i.Name)}>Delete</Button></td>
+                <td><Button size="sm" variant="danger" onClick={(e) => remove(e,i.ID,i.Name)}>Delete</Button></td>
               </tr>
             ))}
           </tbody>

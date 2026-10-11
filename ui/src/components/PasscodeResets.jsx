@@ -62,7 +62,7 @@ export default function PasscodeResets() {
         {resets.map((r) => (
           <ListGroup.Item
             key={r.RequestID}
-            className="d-flex justify-content-between align-items-center"
+            className="d-flex flex-wrap gap-2 justify-content-between align-items-center"
           >
             <div>
               <div><strong>Passcode reset requested</strong> — {r.DeviceName || "device"}</div>
