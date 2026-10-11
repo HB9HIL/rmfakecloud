@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-11
+
+#### Fixes
+- Widen the notebook pages to nothing get cut off in the PDF export (by @HB9HIL)
+
 ## [0.4.0] - 2026-10-11
 
 #### Features
