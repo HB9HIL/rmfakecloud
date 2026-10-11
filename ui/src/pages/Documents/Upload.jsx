@@ -56,9 +56,9 @@ export default function StyledDropzone({filesUploaded, uploadFolder}) {
     isDragReject,
   } = useDropzone({
      accept: {
-      "application/pdf":[], 
+      "application/pdf":[".pdf"], 
       "application/zip":[".zip", ".rmdoc"], 
-      "application/epub+zip":[],
+      "application/epub+zip":[".epub"],
      },
     onDropAccepted: onDrop,
     maxSize: 1 * 1024 * 1024 * 1024, // 1GB

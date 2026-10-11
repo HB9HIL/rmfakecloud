@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
-//import { useParams } from "react-router-dom";
+//import { useParams } from "react-router";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
@@ -17,7 +17,7 @@ export default function UserProfile(userid) {
   //const { userid } = useParams();
 
   const { data: user, loading, error } = useFetch(`${userListUrl}/${userid}`);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [formErrors, setFormErrors] = useState({});
   const [profileForm, setProfileForm] = useState({
@@ -61,7 +61,7 @@ export default function UserProfile(userid) {
         email: profileForm.email,
       });
       toast("updated");
-      history.push("/users");
+      navigate("/users");
     } catch (e) {
       setFormErrors({ error: e.toString() });
     }

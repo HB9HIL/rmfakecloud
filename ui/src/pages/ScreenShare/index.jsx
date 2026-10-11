@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Container, Alert, Spinner, Button } from "react-bootstrap";
 import { BsGearFill, BsFullscreenExit, BsArrowCounterclockwise, BsArrowClockwise } from "react-icons/bs";
-import pako from "pako";
+import { inflate } from "pako";
 import constants from "../../common/constants";
 
 const STATUS = {
@@ -283,7 +283,7 @@ export default function ScreenShare() {
                     const deflatedSize = fv.getUint32(3, false);
                     if (7 + deflatedSize > frame.byteLength) continue;
                     const compressed = new Uint8Array(frame.buffer.slice(frame.byteOffset + 7, frame.byteOffset + 7 + deflatedSize));
-                    const raw = pako.inflate(compressed);
+                    const raw = inflate(compressed);
                     if (!raw || raw.length < 12) continue;
 
                     const rv = new DataView(raw.buffer);

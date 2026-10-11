@@ -45,8 +45,6 @@ const DocumentTree = ({ selection, onSelect, treeRef, term, entries, height = 70
           if (treeRef.current == null) {
             if (arg) treeRef.current = arg
           }
-
-          return treeRef.current
         }}
         data={entries}
         selection={selection?.id}

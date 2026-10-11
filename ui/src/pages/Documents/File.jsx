@@ -118,7 +118,7 @@ export default function FileViewer({ file, onSelect }) {
 
       {file && (
         <div ref={parent} style={{height: "95%"}}>
-		  <Document file={downloadUrl} onLoadSuccess={onLoadSuccess} options={options}>
+		  <Document file={downloadUrl} onLoadSuccess={onLoadSuccess} options={options} suspense={false}>
             <Page pageNumber={page} 
 							// width={ width } 
 							height={ height} 

@@ -1,13 +1,23 @@
 import { useMemo } from "react";
 import { Stack } from "react-bootstrap";
 import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
+  useTable,
+  tableFeatures,
+  rowSortingFeature,
+  rowSelectionFeature,
+  columnSizingFeature,
+  createSortedRowModel,
   flexRender,
 } from "@tanstack/react-table";
 import FileIcon from "./FileIcon";
 import moment from "moment";
+
+const features = tableFeatures({
+  rowSortingFeature,
+  rowSelectionFeature,
+  columnSizingFeature,
+  sortedRowModel: createSortedRowModel(),
+});
 
 // optional: load user-specific locale from config
 // moment.locale(locale); // eg. 'de' or 'fr'
@@ -39,7 +49,7 @@ export default function FileListViewer({ listStyle, files, onSelect, counter, se
           <input
             type="checkbox"
             checked={table.getIsAllRowsSelected()}
-            indeterminate={table.getIsSomeRowsSelected()}
+            indeterminate={table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
             onClick={(e) => e.stopPropagation()}
           />
@@ -72,7 +82,7 @@ export default function FileListViewer({ listStyle, files, onSelect, counter, se
             {row.original.data.name}
           </div>
         ),
-        sortingFn: (rowA, rowB) => {
+        sortFn: (rowA, rowB) => {
           return rowA.original.data.name.localeCompare(rowB.original.data.name);
         },
       },
@@ -86,7 +96,7 @@ export default function FileListViewer({ listStyle, files, onSelect, counter, se
             {row.original.isLeaf && <span>{formatBytes(row.original.data.size)}</span>}
           </div>
         ),
-        sortingFn: (rowA, rowB) => {
+        sortFn: (rowA, rowB) => {
           const valA = rowA.original.isLeaf ? rowA.original.data.size : rowA.original.children?.length || 0;
           const valB = rowB.original.isLeaf ? rowB.original.data.size : rowB.original.children?.length || 0;
           return valA - valB;
@@ -102,7 +112,7 @@ export default function FileListViewer({ listStyle, files, onSelect, counter, se
             {moment(row.original.data.lastModified).format('LT')}
           </div>
         ),
-        sortingFn: (rowA, rowB) => {
+        sortFn: (rowA, rowB) => {
           const dateA = new Date(rowA.original.data.lastModified);
           const dateB = new Date(rowB.original.data.lastModified);
           return dateA.getTime() - dateB.getTime();
@@ -113,11 +123,10 @@ export default function FileListViewer({ listStyle, files, onSelect, counter, se
     [selectedIds, onSelectItem]
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features,
     data: files,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     enableSortingRemoval: false, // Always have a sort direction
     initialState: {
       sorting: [
@@ -211,7 +220,7 @@ export default function FileListViewer({ listStyle, files, onSelect, counter, se
                   onClick={() => onClickItem(row.original)}
                 >
                   <Stack direction="horizontal">
-                    {row.getVisibleCells().map(cell => (
+                    {row.getAllCells().map(cell => (
                       <div
                         key={cell.id}
                         style={{

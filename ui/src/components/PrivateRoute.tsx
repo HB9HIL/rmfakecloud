@@ -1,44 +1,29 @@
 import React from "react";
-import { Route, Redirect } from "react-router-dom";
+import { Navigate, useLocation } from "react-router";
 import { logout } from "../common/actions";
 import { useAuthState } from "../common/useAuthContext";
 
 type RouteProp = {
-  component: React.ComponentType;
+  children: React.ReactNode;
   roles?: string[];
-  exact?: boolean;
-  path: string;
 };
 
-export const PrivateRoute = ({
-  component: Component,
-  roles,
-  ...rest
-}: RouteProp) => {
+export const PrivateRoute = ({ children, roles }: RouteProp) => {
   const { state:{user}, dispatch } = useAuthState(); //read the values of loading and errorMessage from context
-  return (
-    <Route
-      {...rest}
-      render={(props) => {
-        if (!user) {
-          // not logged in so redirect to login page with the return url
-          return (
-            <Redirect
-              to={{ pathname: "/login", state: { from: props.location } }}
-            />
-          );
-        }
+  const location = useLocation();
 
-        // check if route is restricted by role
-        if (roles && user.Roles && roles.indexOf(user.Roles[0]) === -1) {
-          // role not authorised ==> logout
-          logout(dispatch);
-          return <Redirect to={{ pathname: "/login" }} />;
-        }
+  if (!user) {
+    // not logged in so redirect to login page with the return url
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
-        // authorised so return component
-        return <Component {...props} />;
-      }}
-    />
-  );
+  // check if route is restricted by role
+  if (roles && user.Roles && roles.indexOf(user.Roles[0]) === -1) {
+    // role not authorised ==> logout
+    logout(dispatch);
+    return <Navigate to="/login" replace />;
+  }
+
+  // authorised so return component
+  return children;
 };

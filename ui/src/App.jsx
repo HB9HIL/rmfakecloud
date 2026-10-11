@@ -1,5 +1,5 @@
 import {useEffect} from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router";
 import { ToastContainer } from 'react-toastify';
 
 import apiService from "./services/api.service";
@@ -18,8 +18,6 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import ScreenShare from "./pages/ScreenShare";
 import NoMatch from "./pages/404";
-
-import "react-toastify/dist/ReactToastify.css";
 
 import "./App.scss"
 
@@ -43,20 +41,20 @@ export default function App() {
             <Navigationbar />
             <PasscodeResets />
             <div style={{flex: "1 1 auto", minHeight: 0, overflow: "hidden"}}>
-              <Switch>
-                <PrivateRoute exact path="/" component={Home} />
-                <PrivateRoute path="/documents/:itemId?" component={Documents} />
-                <PrivateRoute path="/connect" component={Connect} />
-                <PrivateRoute path="/pair/app" component={Connect} />
-                <PrivateRoute path="/pair" component={Connect} />
-                <PrivateRoute path="/integrations" component={Integrations} />
-                <PrivateRoute path="/profile" component={Profile} />
-                <PrivateRoute path="/screenshare" component={ScreenShare} />
-                <PrivateRoute path="/admin" roles={[Role.Admin]} component={Admin} />
+              <Routes>
+                <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+                <Route path="/documents/:itemId?" element={<PrivateRoute><Documents /></PrivateRoute>} />
+                <Route path="/connect" element={<PrivateRoute><Connect /></PrivateRoute>} />
+                <Route path="/pair/app" element={<PrivateRoute><Connect /></PrivateRoute>} />
+                <Route path="/pair" element={<PrivateRoute><Connect /></PrivateRoute>} />
+                <Route path="/integrations" element={<PrivateRoute><Integrations /></PrivateRoute>} />
+                <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+                <Route path="/screenshare" element={<PrivateRoute><ScreenShare /></PrivateRoute>} />
+                <Route path="/admin" element={<PrivateRoute roles={[Role.Admin]}><Admin /></PrivateRoute>} />
 
-                <Route path="/login" component={Login} />
-                <Route component={NoMatch} />
-              </Switch>
+                <Route path="/login" element={<Login />} />
+                <Route path="*" element={<NoMatch />} />
+              </Routes>
             </div>
           </div>
         </Router>

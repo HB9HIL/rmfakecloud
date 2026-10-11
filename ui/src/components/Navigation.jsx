@@ -2,7 +2,7 @@ import React from "react";
 import { Nav, Navbar, Button, NavDropdown, Container } from "react-bootstrap";
 import { logout } from "../common/actions";
 import { useAuthState } from "../common/useAuthContext";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 const NavigationBar = () => {
   const { state:{user}, dispatch } = useAuthState();

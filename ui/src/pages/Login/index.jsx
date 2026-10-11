@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Button, Form } from "react-bootstrap";
 
 import { useAuthState } from "../../common/useAuthContext";
@@ -8,7 +8,7 @@ import { loginUser } from "../../common/actions";
 import styles from "./Login.module.scss";
 
 const Login = () => {
-  let history = useHistory();
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,7 +21,7 @@ const Login = () => {
     let payload = { email: username, password };
     try {
       await loginUser(dispatch, payload);
-      history.push("/documents"); //TODO: usenavigate or return redirect
+      navigate("/documents");
     } catch (error) {
       console.log(error);
     }

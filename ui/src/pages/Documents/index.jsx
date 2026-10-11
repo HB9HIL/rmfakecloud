@@ -1,7 +1,7 @@
 import DocumentTree from "./Tree";
 import apiservice from "../../services/api.service"
 import { useEffect, useRef, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router";
 import { Container, Row, Col } from "react-bootstrap";
 import File from "./File";
 import Folder from "./Folder";
@@ -25,7 +25,7 @@ export default function DocumentList() {
   const [treeHeight, setTreeHeight] = useState(700);
 
   const { itemId } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { state: { user } } = useAuthState();
 
   const treeRef = useRef(null);
@@ -65,9 +65,9 @@ export default function DocumentList() {
     if (node && node.id) {
       // Don't add root and trash to URL, keep as /documents
       if (node.id === 'root' || node.id === 'trash') {
-        history.push('/documents');
+        navigate('/documents');
       } else {
-        history.push(`/documents/${node.id}`);
+        navigate(`/documents/${node.id}`);
       }
     }
   };
@@ -189,7 +189,7 @@ export default function DocumentList() {
     if (!result) {
       // Item doesn't exist in our data
       toast.warning(`Item not found, returning to root`);
-      history.push('/documents');
+      navigate('/documents');
       return;
     }
 

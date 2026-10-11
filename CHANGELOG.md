@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The UI uses npm instead of pnpm (by @HB9HIL)
 - The UI is linted in CI (by @HB9HIL)
 - Updated the UI build tooling, which also fixes the `npm audit` findings (by @HB9HIL)
+- Updated the UI libraries to React 19 and others (by @HB9HIL)
 
 ## [0.1.0] - 2026-10-10
 
