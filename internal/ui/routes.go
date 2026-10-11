@@ -55,6 +55,9 @@ func (app *ReactAppWrapper) RegisterRoutes(router *gin.Engine) {
 	})
 
 	auth.GET("newcode", app.newCode)
+	auth.GET("version", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"version": app.cfg.Version})
+	})
 
 	// passcode (PIN) reset approval
 	auth.GET("passcode/resets", app.listPasscodeResets)

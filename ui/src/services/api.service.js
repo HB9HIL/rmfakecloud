@@ -109,6 +109,16 @@ class ApiServices {
     });
   }
 
+  getVersion() {
+    return fetch(`${constants.ROOT_URL}/version`, {
+      method: "GET",
+      headers: this.header(),
+    }).then(async (r) => {
+      await handleError(r);
+      return r.json();
+    });
+  }
+
   getTOTP() {
     return fetch(`${constants.ROOT_URL}/profile/totp`, {
       method: "GET",

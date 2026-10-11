@@ -2,6 +2,7 @@ describe("auth", () => {
   it("redirects to the login page", () => {
     cy.visit("/documents");
     cy.location("pathname").should("eq", "/login");
+    cy.get("footer").should("not.exist");
   });
 
   it("shows the home page after login", () => {
@@ -9,6 +10,7 @@ describe("auth", () => {
     cy.visit("/");
     cy.contains("h1", "Welcome to your own reMarkable Cloud!");
     cy.get("#userMenu").should("have.text", "admin");
+    cy.contains("footer", /^rmfakecloud \S+$/);
   });
 
   it("rejects a wrong password", () => {

@@ -77,6 +77,14 @@ html, body, #root {
     border-bottom: 1px solid $background2;
 }
 
+.app-footer {
+    border-top: 1px solid $background2;
+    font-size: 0.75rem;
+    opacity: 0.6;
+    padding: 0.25rem 1rem;
+    text-align: right;
+}
+
 .form-control:focus {
     border-color: $action;
     box-shadow: none;

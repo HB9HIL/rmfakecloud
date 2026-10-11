@@ -107,6 +107,8 @@ type Config struct {
 	MQTTPort          string
 	ICEServers        []interface{}
 	HashSchemaVersion string
+	// Version is the build version (git describe), shown to logged in users
+	Version string
 }
 
 // Verify verify

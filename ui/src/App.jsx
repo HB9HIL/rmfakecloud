@@ -8,6 +8,7 @@ import Role from "./common/Role";
 import { PrivateRoute } from "./components/PrivateRoute";
 import Navigationbar from "./components/Navigation";
 import PasscodeResets from "./components/PasscodeResets";
+import Footer from "./components/Footer";
 
 import Login from "./pages/Login";
 import Home from "./pages/Home";
@@ -54,6 +55,7 @@ export default function App() {
                 <Route path="*" element={<NoMatch />} />
               </Routes>
             </div>
+            <Footer />
           </div>
         </Router>
       </AuthProvider>

@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var version string
+var version = "dev"
 
 func configureLogging() io.Closer {
 	logfileName := os.Getenv(config.EnvLogFile)
@@ -69,6 +69,7 @@ func main() {
 	}
 
 	cfg := config.FromEnv()
+	cfg.Version = version
 
 	//cli
 	cmd := cli.New(cfg)
