@@ -162,7 +162,8 @@ func (app *ReactAppWrapper) login(c *gin.Context) {
 		scopes = isSync15Key
 	}
 	expiresAfter := 24 * time.Hour
-	expires := time.Now().Add(expiresAfter)
+	now := time.Now()
+	expires := now.Add(expiresAfter)
 	claims := &WebUserClaims{
 		UserID:    user.ID,
 		BrowserID: uuid.NewString(),
@@ -170,6 +171,7 @@ func (app *ReactAppWrapper) login(c *gin.Context) {
 		Scopes:    scopes,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expires),
+			IssuedAt:  jwt.NewNumericDate(now),
 			Issuer:    "rmFake WEB",
 			Audience:  []string{WebUsage},
 		},

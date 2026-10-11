@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/ddvk/rmfakecloud/internal/common"
 	"github.com/gin-gonic/gin"
@@ -66,15 +67,28 @@ func (app *ReactAppWrapper) authMiddleware() gin.HandlerFunc {
 		}
 
 		uid := common.SanitizeUid(claims.UserID)
+		// the profile decides: deleted users, password changes and admin rights apply at once
+		user, err := app.userStorer.GetUser(uid)
+		if err != nil {
+			log.Warn("[ui-authmiddleware] cannot load user, ", err)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing or incorrect token"})
+			return
+		}
+		var issued time.Time
+		if claims.IssuedAt != nil {
+			issued = claims.IssuedAt.Time
+		}
+		if issued.Before(user.TokensValidAfter) {
+			log.Warn("[ui-authmiddleware] token issued before the last password change: ", uid)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing or incorrect token"})
+			return
+		}
 		c.Set(userIDContextKey, uid)
 
 		brid := claims.BrowserID
 		c.Set(browserIDContextKey, brid)
-		for _, r := range claims.Roles {
-			if r == AdminRole {
-				c.Set(AdminRole, true)
-				break
-			}
+		if user.IsAdmin {
+			c.Set(AdminRole, true)
 		}
 		log.Info("[ui-authmiddleware] User from token: ", uid)
 		c.Next()

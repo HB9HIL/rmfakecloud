@@ -59,6 +59,8 @@ type User struct {
 	TOTPSecret string `yaml:",omitempty" json:"-"`
 	// TOTPLastStep is the last accepted time step, a code is valid only once
 	TOTPLastStep int64 `yaml:",omitempty" json:"-"`
+	// TokensValidAfter invalidates web sessions issued before it
+	TokensValidAfter time.Time `yaml:",omitempty" json:"-"`
 }
 
 // IntegrationConfig config for various integrations
@@ -157,9 +159,11 @@ func (u *User) GenID() (err error) {
 	return errors.New("not implemented")
 }
 
-// SetPassword sets the user password (and hashes it)
+// SetPassword sets the user password (and hashes it) and ends the web sessions
 func (u *User) SetPassword(raw string) (err error) {
 	u.Password, err = hashPassword(raw)
+	// jwt timestamps have second precision, a token issued right after stays valid
+	u.TokensValidAfter = time.Now().Truncate(time.Second)
 	return
 }
 

@@ -18,6 +18,7 @@ This file, written in YAML, have the following relevant entries:
 | `sync15` | Boolean value that indicates if the user is using the [diff synchronization](diff-sync.md) (aka. sync 1.5) |
 | `integrations` | Array with the user integrations. See [Integrations](integrations.md) |
 | `totpsecret` | Secret for the two-factor login, only present if it is enabled |
+| `tokensvalidafter` | Web UI sessions started before this time are invalid, set on every password change |
 
 
 ### Edit settings through CLI
