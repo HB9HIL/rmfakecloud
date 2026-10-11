@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Features
 - The web UI shows the server version in the footer when logged in (by @HB9HIL)
 
+#### Chore
+- Documented the screen sharing setup for tablet software up to 3.26 (by @HB9HIL)
+
 #### Fixes
 - Documents with a fractional text scale from newer firmware can be exported again ([ddvk#499](https://github.com/ddvk/rmfakecloud/pull/499)) (by @cyc115)
 - Web screen sharing decodes frames that arrive in several messages correctly ([ddvk#457](https://github.com/ddvk/rmfakecloud/pull/457)) (by @rmitchellscott)

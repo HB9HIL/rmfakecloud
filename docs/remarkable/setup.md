@@ -128,6 +128,60 @@ Same as [the previous method](#modify-device-etchosts), but instead of modifying
 **PROS**: a bit easier, you can you even the mobile apps if you manage to install the root ca  
 **CONS**: you can't use the official cloud anymore due to the mangled DNS
 
+## Screen sharing (software up to 3.26)
+
+Up to software 3.26 the tablet signals screen sharing over MQTT with TLS. It always
+connects to `vernemq-prod.cloud.remarkable.engineering` on port 443. The hostname is built
+in: the tablet doesn't ask rmfakecloud for it, and rmfakecloud-proxy doesn't cover it.
+Without the steps below, screen sharing silently does nothing.
+
+From software 3.27 on, screen sharing uses the normal API through rmfakecloud-proxy and
+needs none of this.
+
+!!! note
+    These steps follow what the tablet does on 3.26, they are not yet tested end to end.
+
+### Server
+
+1. Make port 443 of `<your rmfakecloud ip>` pass the MQTT connection on to rmfakecloud's
+   MQTT port (`MQTT_PORT`, default `8883`). If the web UI already uses port 443 there,
+   route by SNI `vernemq-prod.cloud.remarkable.engineering`, see
+   [reverse proxy for MQTT](../install/configuration.md#reverse-proxy-for-mqtt-screen-sharing).
+2. Terminate TLS with a certificate for `vernemq-prod.cloud.remarkable.engineering` that the
+   tablet trusts. A public certificate is impossible, the name belongs to reMarkable. Use
+   `proxy.crt` and `proxy.key` from `/home/root/rmfakecloud/` on the tablet: they are valid
+   for `*.cloud.remarkable.engineering` and signed by the CA that rmfakecloud-proxy
+   installed on the tablet.
+
+### Tablet
+
+Point the hostname to `<your rmfakecloud ip>` in the tablet's `/etc/hosts`. Use the address
+where port 443 reaches step 1, usually your public IP, not `127.0.0.1`: rmfakecloud-proxy
+on the tablet only handles HTTP. A DNS override on your router usually doesn't help, the
+tablet asks public DNS servers directly.
+
+On the reMarkable Paper Pro `/` is read only and `/etc` is an overlay in RAM, so a plain
+edit of `/etc/hosts` is gone after a reboot. Write to the root file system underneath:
+
+```shell
+mount -o remount,rw /
+mkdir -p /tmp/rootfs && mount --bind / /tmp/rootfs
+echo "<your rmfakecloud ip> vernemq-prod.cloud.remarkable.engineering" >> /tmp/rootfs/etc/hosts
+umount /tmp/rootfs && mount -o remount,ro /
+```
+
+Like the rmfakecloud-proxy setup, the entry is gone after a system update.
+
+### Check
+
+Start screen sharing on the tablet. The rmfakecloud log shows
+`MQTT: Authentication SUCCESS` for the tablet, and the web UI's screen share page picks
+up the stream.
+
+If nothing shows up in the log, the tablet still reaches reMarkable: check the hosts
+entry with `ping vernemq-prod.cloud.remarkable.engineering` on the tablet, it has to
+resolve to `<your rmfakecloud ip>`.
+
 ## Reenabling after a system update
 
 After a system update, you'll need to go through the steps to setup your device again, as any changes you made to it's configuration will have been lost.

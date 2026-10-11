@@ -70,11 +70,13 @@ Older tablet software uses MQTT for screen share signaling. This requires additi
 |-------------------|-------------|
 | `MQTT_PORT`       | Port for MQTT broker (default: 8883) |
 | `ICE_SERVERS`     | JSON array of WebRTC ICE servers. Default: none. Format: `[{"urls":["stun:stun.l.google.com:19302"]}]` or with TURN: `[{"urls":["turn:turn.example.com:3478"],"username":"user","credential":"pass"}]` |
-| `TLS_CERT`          | `path/to/cert`, required for MQTT screen sharing |
-| `TLS_KEY`           | `/path/to/key`, required for MQTT screen sharing |
+| `TLS_CERT`          | `path/to/cert`, MQTT with TLS, unless the reverse proxy terminates TLS |
+| `TLS_KEY`           | `/path/to/key`, MQTT with TLS, unless the reverse proxy terminates TLS |
 
-TLS certificates are required for MQTT screen sharing. Desktop apps may not use the system certificate store for MQTT.  
-Requires overriding DNS for `vernemq-prod.cloud.remarkable.engineering` to point to your rmfakecloud instance and using a TCP (not HTTP) reverse proxy.  
+The tablet connects to `vernemq-prod.cloud.remarkable.engineering:443` with TLS, see
+[device setup](../remarkable/setup.md#screen-sharing-software-up-to-326) for the hosts entry and the certificate.
+Either the reverse proxy terminates TLS (below), or rmfakecloud does with `TLS_CERT`/`TLS_KEY`, then the web UI and API are served over HTTPS as well.
+Desktop apps may not use the system certificate store for MQTT.  
 Without `ICE_SERVERS` set, screen sharing will work over USB and if the tablet and desktop app are on the same network.
 
 ### Reverse proxy for MQTT (Screen sharing)
@@ -116,4 +118,26 @@ tcp:
 entryPoints:
   mqtt:
     address: ":443"
+```
+
+#### Traefik on Kubernetes, next to the web UI
+
+To share port 443 with the web UI, route by SNI on the existing `websecure` entry point.
+Traefik terminates TLS with the tablet's `proxy.crt`/`proxy.key` (as a TLS secret) and passes plain MQTT on.
+Not tested end to end yet:
+
+```yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: rmfakecloud-mqtt
+spec:
+  entryPoints: [websecure]
+  routes:
+    - match: HostSNI(`vernemq-prod.cloud.remarkable.engineering`)
+      services:
+        - name: rmfakecloud
+          port: 8883
+  tls:
+    secretName: rmfakecloud-mqtt-tls
 ```
