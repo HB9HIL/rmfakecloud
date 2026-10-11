@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-11
+
 #### Chore
 - The Docker image cross-compiles the Go binary for arm instead of building under QEMU, all platforms build in one job (by @HB9HIL)
 
