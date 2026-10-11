@@ -123,6 +123,7 @@ func (app *ReactAppWrapper) login(c *gin.Context) {
 	user, err := app.userStorer.GetUser(form.Email)
 	if err != nil {
 		log.Error(uiLogger, err, " cannot load user, login failed ip: ", ip)
+		model.CheckDummyPassword(form.Password)
 		app.limiter.fail(ip, time.Now())
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return

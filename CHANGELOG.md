@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changing the password and registering no longer return the user profile with the password hash and integration credentials (by @HB9HIL)
 - A password change ends all web UI sessions of the user, deleted users and removed admin rights apply immediately instead of after up to 24 hours (by @HB9HIL)
 - Screen sharing rooms are only visible and usable by their own user, also over MQTT (by @HB9HIL)
+- The local file system integration no longer follows symlinks out of its directory (by @HB9HIL)
+- A login with an unknown user takes as long as one with a wrong password, so it no longer reveals which users exist (by @HB9HIL)
+- User ids can contain `-`, the characters `[\]^` are removed (by @HB9HIL)
+- Small fixes in the upload handlers of the tablet API (by @HB9HIL)
 
 ## [0.3.0] - 2026-10-11
 

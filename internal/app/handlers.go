@@ -254,7 +254,10 @@ func (app *App) uploadDoc(c *gin.Context) {
 		return
 	}
 
-	meta := form.Value["meta"][0]
+	var meta string
+	if v := form.Value["meta"]; len(v) > 0 {
+		meta = v[0]
+	}
 	if meta == "" {
 		log.Warn(handlerLog, " missing 'meta'")
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -1157,6 +1160,7 @@ func (app *App) uploadRequest(c *gin.Context) {
 		documentID := r.ID
 		if documentID == "" {
 			badReq(c, "no id")
+			return
 		}
 		url, exp, err := app.docStorer.GetStorageURL(uid, documentID)
 		if err != nil {

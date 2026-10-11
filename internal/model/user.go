@@ -28,7 +28,7 @@ var emailWhiteList *regexp.Regexp
 
 func init() {
 	var err error
-	emailWhiteList, err = regexp.Compile("[^a-zA-Z0-9.@-_]+")
+	emailWhiteList, err = regexp.Compile("[^a-zA-Z0-9.@_-]+")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -165,6 +165,15 @@ func (u *User) SetPassword(raw string) (err error) {
 	// jwt timestamps have second precision, a token issued right after stays valid
 	u.TokensValidAfter = time.Now().Truncate(time.Second)
 	return
+}
+
+// dummyHash is checked for unknown users, so a login takes the same time either way
+var dummyHash, _ = hashPassword("dummy")
+
+// CheckDummyPassword takes as long as CheckPassword, for logins of unknown users
+func CheckDummyPassword(raw string) {
+	u := User{Password: dummyHash}
+	u.CheckPassword(raw)
 }
 
 // CheckPassword checks the password

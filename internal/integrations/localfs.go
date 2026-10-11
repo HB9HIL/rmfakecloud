@@ -25,6 +25,14 @@ func cleanPath(p string) string {
 	return path.Clean("/" + p)
 }
 
+// rootRel turns a path into one relative to the os.Root
+func rootRel(p string) string {
+	if r := strings.TrimPrefix(cleanPath(p), "/"); r != "" {
+		return r
+	}
+	return "."
+}
+
 // newLocalFS localfs integration
 func newLocalFS(i model.IntegrationConfig) *localFS {
 	return &localFS{
@@ -71,8 +79,15 @@ func (d *localFS) List(folder string, depth int) (*messages.IntegrationFolder, e
 
 	log.Infof("[localfs] query for '%s' depth %d: ", startPath, depth)
 
-	err := visitDir(d.rootPath, startPath, depth, response, func(s string) ([]fs.FileInfo, error) {
-		di, err := os.ReadDir(s)
+	// os.Root also stops symlinks from leaving the root path
+	root, err := os.OpenRoot(d.rootPath)
+	if err != nil {
+		return nil, err
+	}
+	defer root.Close()
+
+	err = visitDir("", startPath, depth, response, func(s string) ([]fs.FileInfo, error) {
+		di, err := fs.ReadDir(root.FS(), rootRel(s))
 		if err != nil {
 			return nil, err
 		}
@@ -100,16 +115,18 @@ func (d *localFS) Download(fileID string) (io.ReadCloser, int64, error) {
 		return nil, 0, err
 	}
 
-	localPath := path.Join(d.rootPath, cleanPath(decoded))
-	log.Infof("[localfs] getting local file %s", localPath)
+	log.Infof("[localfs] getting local file %s", cleanPath(decoded))
 
-	st, err := os.Stat(localPath)
+	res, err := os.OpenInRoot(d.rootPath, rootRel(decoded))
 	if err != nil {
 		return nil, 0, err
 	}
-
-	res, err := os.Open(localPath)
-	return res, st.Size(), err
+	st, err := res.Stat()
+	if err != nil {
+		res.Close()
+		return nil, 0, err
+	}
+	return res, st.Size(), nil
 }
 
 func (d *localFS) Upload(folderID, name, fileType string, reader io.ReadCloser) (id string, err error) {
@@ -123,10 +140,13 @@ func (d *localFS) Upload(folderID, name, fileType string, reader io.ReadCloser) 
 	filePath := cleanPath(path.Join(folder, name+"."+fileType))
 	log.Trace(loggerfs, "Cleaned: ", filePath)
 
-	fullPath := path.Join(d.rootPath, filePath)
-
-	log.Trace(loggerfs, "Uploading to: ", fullPath)
-	writer, err := os.Create(fullPath)
+	log.Trace(loggerfs, "Uploading to: ", filePath)
+	root, err := os.OpenRoot(d.rootPath)
+	if err != nil {
+		return
+	}
+	defer root.Close()
+	writer, err := root.Create(rootRel(filePath))
 	if err != nil {
 		return
 	}

@@ -39,3 +39,20 @@ func TestUserJSONHidesSecrets(t *testing.T) {
 		t.Error("profile yaml lost the password hash")
 	}
 }
+
+func TestNewUserSanitizesID(t *testing.T) {
+	for in, want := range map[string]string{
+		"jean-luc@example.com": "jean-luc@example.com",
+		"first_last":           "first_last",
+		`a\b[c]^d`:             "abcd",
+		"x/y z":                "xyz",
+	} {
+		u, err := NewUser(in, "pass")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if u.ID != want {
+			t.Errorf("NewUser(%q).ID = %q, want %q", in, u.ID, want)
+		}
+	}
+}
