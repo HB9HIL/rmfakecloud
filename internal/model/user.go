@@ -132,7 +132,11 @@ func NewUser(userID string, rawPassword string) (*User, error) {
 		return nil, err
 	}
 
+	// the id is the name of the user's directory
 	sanitizedID := sanitizeEmail(userID)
+	if sanitizedID == "" || sanitizedID == "." || sanitizedID == ".." {
+		return nil, errors.New("invalid user id")
+	}
 	return &User{
 		ID:            sanitizedID,
 		Email:         sanitizedID,
