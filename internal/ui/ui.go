@@ -77,6 +77,7 @@ type ReactAppWrapper struct {
 	backends      map[common.SyncVersion]backend
 	roomManager   *screenshare.RoomManager
 	mqtt          mqttBridge
+	limiter       *loginLimiter
 }
 
 // hack for serving index.html on /
@@ -120,6 +121,7 @@ func New(cfg *config.Config,
 		},
 		roomManager: roomManager,
 		mqtt:        mqttBroker,
+		limiter:     newLoginLimiter(),
 	}
 	return &staticWrapper
 }

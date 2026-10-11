@@ -15,6 +15,13 @@ const trashID = "trash"
 type LoginForm struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Code     string `json:"code"`
+}
+
+// TOTPForm enables or disables two-factor login
+type TOTPForm struct {
+	Secret string `json:"secret"`
+	Code   string `json:"code"`
 }
 
 // ResetPasswordForm reset password

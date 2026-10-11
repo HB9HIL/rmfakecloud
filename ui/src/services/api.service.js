@@ -20,9 +20,12 @@ class ApiServices {
       headers: this.header(),
       body: JSON.stringify(loginData),
     })
-      .then((r) => {
+      .then(async (r) => {
         if (!r.ok) {
-          throw new Error(r.statusText);
+          const body = await r.json().catch(() => ({}));
+          const err = new Error(body.error || r.statusText);
+          err.totp = body.error === "totp";
+          throw err;
         }
         return r.text();
       })
@@ -104,6 +107,30 @@ class ApiServices {
         ...resetPasswordForm,
       }),
     });
+  }
+
+  getTOTP() {
+    return fetch(`${constants.ROOT_URL}/profile/totp`, {
+      method: "GET",
+      headers: this.header(),
+    }).then(async (r) => {
+      await handleError(r);
+      return r.json();
+    });
+  }
+  enableTOTP(secret, code) {
+    return fetch(`${constants.ROOT_URL}/profile/totp`, {
+      method: "POST",
+      headers: this.header(),
+      body: JSON.stringify({ secret, code }),
+    }).then(handleError);
+  }
+  disableTOTP(code) {
+    return fetch(`${constants.ROOT_URL}/profile/totp/disable`, {
+      method: "POST",
+      headers: this.header(),
+      body: JSON.stringify({ code }),
+    }).then(handleError);
   }
 
   listDocument() {

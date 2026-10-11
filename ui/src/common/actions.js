@@ -13,7 +13,8 @@ export async function loginUser(dispatch, loginPayload) {
 
     return;
   } catch (error) {
-    dispatch({ type: "LOGIN_ERROR", error: "Can't login: " + error.message});
+    dispatch({ type: "LOGIN_ERROR", error: error.totp ? null : "Can't login: " + error.message});
+    throw error;
   }
 }
 

@@ -63,6 +63,9 @@ func (app *ReactAppWrapper) RegisterRoutes(router *gin.Engine) {
 
 	// auth.GET("profile", app.newCode)
 	auth.POST("profile", app.changePassword)
+	auth.GET("profile/totp", app.getTOTP)
+	auth.POST("profile/totp", app.enableTOTP)
+	auth.POST("profile/totp/disable", app.disableTOTP)
 	// auth.POST("changeEmail", app.changePassword)
 
 	auth.GET("documents", app.listDocuments)

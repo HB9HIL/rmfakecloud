@@ -11,6 +11,9 @@ const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [needCode, setNeedCode] = useState(false);
+  const [codeError, setCodeError] = useState(null);
 
   const { state, dispatch } = useAuthState(); //read the values of loading and errorMessage from context
   const { errorMessage, loading } = state;
@@ -18,12 +21,16 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    let payload = { email: username, password };
+    let payload = { email: username, password, code };
     try {
       await loginUser(dispatch, payload);
       navigate("/documents");
     } catch (error) {
-      console.log(error);
+      if (error.totp) {
+        setCodeError(needCode ? "Invalid code" : null);
+        setNeedCode(true);
+        setCode("");
+      }
     }
   };
 
@@ -32,6 +39,7 @@ const Login = () => {
       <div className={styles.formContainer}>
         <h3 className="mb-4">Log in</h3>
         {errorMessage ? <p className={styles.error}>{errorMessage}</p> : null}
+        {codeError ? <p className={styles.error}>{codeError}</p> : null}
 
         <Form onSubmit={handleLogin}>
           <Form.Group className="mb-3">
@@ -41,7 +49,7 @@ const Login = () => {
               value={username}
               autoFocus
               onChange={(e) => setUsername(e.target.value)}
-              disabled={loading}
+              disabled={loading || needCode}
               placeholder="Username" 
               autoComplete="username"
               />
@@ -54,11 +62,29 @@ const Login = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
+              disabled={loading || needCode}
               placeholder="Password" 
               autoComplete="current-password"
               />
           </Form.Group>
+
+          {needCode && (
+            <Form.Group className="mb-3">
+              <Form.Label htmlFor="code">Code</Form.Label>
+              <Form.Control
+                id="code"
+                value={code}
+                autoFocus
+                onChange={(e) => setCode(e.target.value.trim())}
+                disabled={loading}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                placeholder="123456"
+              />
+              <Form.Text>Enter the code from your authenticator app</Form.Text>
+            </Form.Group>
+          )}
 
           <Button type="submit" disabled={loading}>
             Login

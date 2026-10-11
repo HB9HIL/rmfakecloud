@@ -17,6 +17,7 @@ This file, written in YAML, have the following relevant entries:
 | `isadmin` | Boolean indicating if the user can perform administration tasks (currently managing user accounts) |
 | `sync15` | Boolean value that indicates if the user is using the [diff synchronization](diff-sync.md) (aka. sync 1.5) |
 | `integrations` | Array with the user integrations. See [Integrations](integrations.md) |
+| `totpsecret` | Secret for the two-factor login, only present if it is enabled |
 
 
 ### Edit settings through CLI
@@ -48,6 +49,25 @@ To reset a password:
 ```sh
 read -s -p "New password: " NEWPASSWD && rmfakecloud setuser -u ddvk -p "${NEWPASSWD}"
 ```
+
+
+#### `rmfakecloud disabletotp`
+
+This command turns off the two-factor login of a user, e.g. after losing the phone:
+
+```sh
+rmfakecloud disabletotp -u ddvk
+```
+
+
+## Two-factor login
+
+Every user can enable a second factor for the web UI login on the profile page:
+scan the QR code with an authenticator app (any app supporting TOTP) and enter
+the code it shows. From then on, the login asks for the current code after the
+password. Disabling it on the profile page also requires a code.
+
+Tablets are not affected: they are paired with a code from the web UI.
 
 
 ## Directory Structure

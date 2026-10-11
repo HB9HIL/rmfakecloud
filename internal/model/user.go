@@ -55,6 +55,10 @@ type User struct {
 	AdditionalScopes []string
 	// Integrations stores the list of "Integrations" as shown on the tablet.
 	Integrations []IntegrationConfig
+	// TOTPSecret is the base32 secret for two-factor login, empty if disabled
+	TOTPSecret string `yaml:",omitempty" json:"-"`
+	// TOTPLastStep is the last accepted time step, a code is valid only once
+	TOTPLastStep int64 `yaml:",omitempty" json:"-"`
 }
 
 // IntegrationConfig config for various integrations

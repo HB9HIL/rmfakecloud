@@ -69,6 +69,31 @@ func (cli *Cli) SetUser(args []string) {
 	log.Info("Updated/created the user")
 }
 
+// DisableTOTP turns off two-factor login, e.g. after losing the phone
+func (cli *Cli) DisableTOTP(args []string) {
+	userParam := flag.NewFlagSet("disabletotp", flag.ExitOnError)
+	username := userParam.String("u", "", "username")
+
+	userParam.Parse(args)
+	if *username == "" {
+		userParam.PrintDefaults()
+		return
+	}
+
+	usr, err := cli.storage.GetUser(*username)
+	if err != nil {
+		log.Fatal(err)
+	}
+	usr.TOTPSecret = ""
+	usr.TOTPLastStep = 0
+
+	err = cli.storage.UpdateUser(usr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Info("Disabled two-factor login")
+}
+
 // Cli cli interface
 type Cli struct {
 	storage *fs.FileSystemStorage
@@ -95,6 +120,8 @@ func (cli *Cli) Handle(args []string) bool {
 			cli.SetUser(otherarg)
 		case "listusers":
 			cli.ListUsers(otherarg)
+		case "disabletotp":
+			cli.DisableTOTP(otherarg)
 		case "rmuser":
 		default:
 			log.Warn("unknown command: ", cmd)
@@ -109,5 +136,6 @@ func Usage() string {
 	return `Commands:
 	setuser		create users / reset passwords
 	listusers	list available users
+	disabletotp	turn off two-factor login of a user
 `
 }

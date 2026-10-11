@@ -1,5 +1,8 @@
 # Fail2ban
 
+rmfakecloud itself blocks an IP address for 15 minutes after 5 failed web UI logins.
+Behind a reverse proxy this needs `RM_TRUST_PROXY=1`, otherwise all clients share the proxy's address.
+
 For a public server [fail2ban](https://www.fail2ban.org/wiki/index.php/Main_Page) adds some security by banning ip's after few (configurable) failed login attempts.
 Assuming rmfakecloud is running in docker via systemd and logs to the syslog (journalctl) and fail2ban is already installed and setup.
 Instructions install and setup fail2ban in the documentation of the used operating system or at https://github.com/fail2ban/fail2ban#installation .
@@ -25,5 +28,6 @@ Additionally the filter
 failregex = ^.*, login failed ip:\s+<ADDR>.*$
 ```
 in `/etc/fail2ban/filter.d/rmfakecloud.conf` tells fail2ban which lines are relevant.
+Wrong passwords and wrong two-factor codes both match it.
 
 After creating the necessary configuration, restarting fail2ban loads the changes.

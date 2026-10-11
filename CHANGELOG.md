@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-11
+
+#### Features
+- Optional two-factor login (TOTP) for the web UI (by @HB9HIL)
+- Failed web UI logins are limited per IP address (by @HB9HIL)
+
 #### Chore
 - Cypress runs in Chrome instead of the deprecated Electron (by @HB9HIL)
 - Cleaned up the styles and page layouts of the web UI (by @HB9HIL)

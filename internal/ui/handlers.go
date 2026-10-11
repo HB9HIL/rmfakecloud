@@ -112,10 +112,18 @@ func (app *ReactAppWrapper) login(c *gin.Context) {
 		app.cfg.CreateFirstUser = false
 	}
 
+	ip := c.ClientIP()
+	if app.limiter.blocked(ip, time.Now()) {
+		log.Warn(uiLogger, "too many failed logins, blocked ip: ", ip)
+		c.AbortWithStatusJSON(http.StatusTooManyRequests, viewmodel.NewErrorResponse("too many failed logins, try again later"))
+		return
+	}
+
 	// Try to find the user
 	user, err := app.userStorer.GetUser(form.Email)
 	if err != nil {
-		log.Error(uiLogger, err, " cannot load user, login failed ip: ", c.ClientIP())
+		log.Error(uiLogger, err, " cannot load user, login failed ip: ", ip)
+		app.limiter.fail(ip, time.Now())
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
@@ -124,11 +132,30 @@ func (app *ReactAppWrapper) login(c *gin.Context) {
 		if err != nil {
 			log.Error(err)
 		} else if !ok {
-			log.Warn(uiLogger, "wrong password for: ", form.Email, ", login failed ip: ", c.ClientIP())
+			log.Warn(uiLogger, "wrong password for: ", form.Email, ", login failed ip: ", ip)
 		}
+		app.limiter.fail(ip, time.Now())
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+
+	if user.TOTPSecret != "" {
+		if !user.CheckTOTP(form.Code, time.Now()) {
+			// an empty code is the prompt for it, not a failure
+			if form.Code != "" {
+				log.Warn(uiLogger, "wrong totp code for: ", form.Email, ", login failed ip: ", ip)
+				app.limiter.fail(ip, time.Now())
+			}
+			c.AbortWithStatusJSON(http.StatusUnauthorized, viewmodel.NewErrorResponse("totp"))
+			return
+		}
+		if err := app.userStorer.UpdateUser(user); err != nil {
+			log.Error(uiLogger, err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	}
+	app.limiter.reset(ip)
 
 	scopes := ""
 	if user.Sync15 {
