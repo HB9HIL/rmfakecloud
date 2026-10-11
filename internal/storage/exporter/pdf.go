@@ -158,14 +158,22 @@ func annotationPages(pages []archive.Page, dims []types.Dim) []pdfPage {
 			xShift = width/2 - float64(rm.Width)/2*scale
 		}
 
-		// notebook pages can be extended downwards beyond the screen height
+		// notebook pages can be extended downwards beyond the screen height,
+		// and sideways on wider screens (Paper Pro)
 		if i >= len(dims) && p.Data != nil {
+			left, right := 0.0, float64(rm.Width)
 			for _, layer := range p.Data.Layers {
 				for _, line := range layer.Lines {
 					for _, pt := range line.Points {
 						height = max(height, float64(pt.Y+pt.Width)*scale)
+						left = min(left, float64(pt.X-pt.Width))
+						right = max(right, float64(pt.X+pt.Width))
 					}
 				}
+			}
+			if right-left > float64(rm.Width) {
+				xShift = -left * scale
+				width = (right - left) * scale
 			}
 		}
 

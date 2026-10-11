@@ -184,6 +184,21 @@ func TestFlattenFormsWithoutForm(t *testing.T) {
 	}
 }
 
+// strokes outside the screen width (Paper Pro) widen the notebook page instead of being cut off
+func TestNotebookPageFitsStrokes(t *testing.T) {
+	line := rm.Line{BrushType: rm.BallPointV5, Points: []rm.Point{{X: -100, Y: 10, Width: 2}, {X: 1500, Y: 10, Width: 2}}}
+	pages := annotationPages([]archive.Page{{Data: &rm.Rm{Layers: []rm.Layer{{Lines: []rm.Line{line}}}}}}, nil)
+
+	scale := notebookHeight / float64(rm.Height)
+	if want := (1502.0 + 102) * scale; pages[0].width != want {
+		t.Errorf("width %.2f, want %.2f", pages[0].width, want)
+	}
+	// the leftmost point lands on the page
+	if !strings.Contains(string(pages[0].content), fmt.Sprintf(" %.2f %.2f m", 2*scale, notebookHeight-10*scale)) {
+		t.Errorf("stroke not shifted onto the page:\n%s", pages[0].content)
+	}
+}
+
 func TestDrawStrokes(t *testing.T) {
 	points := []rm.Point{{X: 0, Y: 0, Width: 2}, {X: 10, Y: 10, Width: 2}}
 	page := &rm.Rm{Layers: []rm.Layer{{Lines: []rm.Line{
