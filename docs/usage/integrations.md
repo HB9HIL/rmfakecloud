@@ -6,6 +6,12 @@ outside of the tablet.
 Add and edit your integrations on the Integrations page of the web UI. They are
 stored in your [`.userprofile`](userprofile.md).
 
+!!! warning
+    The rmfakecloud server connects to the WebDAV, FTP, ICS and webhook addresses, not the tablet.
+    Every user can enter any address, including services in the server's own network
+    (router, NAS, admin interfaces). If you host users you don't fully trust, limit the
+    server's outgoing connections with a firewall or a separate docker network.
+
 
 ## WebDAV
 
