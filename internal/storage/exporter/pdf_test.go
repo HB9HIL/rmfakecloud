@@ -204,3 +204,19 @@ func TestDrawStrokes(t *testing.T) {
 		t.Error("eraser stroke drawn")
 	}
 }
+
+func TestDrawTextHighlights(t *testing.T) {
+	page := &rm.Rm{Highlights: []rm.Highlight{
+		{Color: rm.HighlightGreen, Rects: []rm.HighlightRect{{X: 10, Y: 20, W: 30, H: 5}}},
+		{Color: rm.HighlightDynamic, ColorRGBA: &[4]uint8{255, 0, 0, 255}, Rects: []rm.HighlightRect{{X: 0, Y: 0, W: 1, H: 1}}},
+	}}
+	content := string(drawStrokes(page, 1, 0, 100))
+
+	// box from the top left corner, PDF y grows upwards
+	if !strings.Contains(content, "0.000 1.000 0.000 rg /GSH gs 10.00 75.00 30.00 5.00 re f") {
+		t.Errorf("green highlight box missing:\n%s", content)
+	}
+	if !strings.Contains(content, "1.000 0.000 0.000 rg") {
+		t.Error("RGBA highlight color ignored")
+	}
+}

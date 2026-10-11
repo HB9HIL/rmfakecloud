@@ -521,7 +521,8 @@ func parseV6GlyphBlock(r *v6Reader, blockEnd int) (*Highlight, error) {
 		if err != nil {
 			return nil, err
 		}
-		rects = append(rects, HighlightRect{X: x, Y: y, W: w, H: h})
+		// center-origin like the strokes, shifted the same way
+		rects = append(rects, HighlightRect{X: x + float64(Width)/2, Y: y, W: w, H: h})
 	}
 	r.pos = rectsSubEnd
 

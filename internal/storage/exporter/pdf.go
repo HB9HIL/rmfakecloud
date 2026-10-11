@@ -184,6 +184,18 @@ func annotationPages(pages []archive.Page, dims []types.Dim) []pdfPage {
 func drawStrokes(page *rm.Rm, scale, xShift, height float64) []byte {
 	var b bytes.Buffer
 	b.WriteString("1 J 1 j\n")
+	// text highlights (v6) as semi-transparent boxes below the strokes
+	for _, hl := range page.Highlights {
+		color := brushColors[hl.Color]
+		if c := hl.ColorRGBA; c != nil {
+			color = [3]float64{float64(c[0]) / 255, float64(c[1]) / 255, float64(c[2]) / 255}
+		}
+		fmt.Fprintf(&b, "q %.3f %.3f %.3f rg /GSH gs", color[0], color[1], color[2])
+		for _, r := range hl.Rects {
+			fmt.Fprintf(&b, " %.2f %.2f %.2f %.2f re", r.X*scale+xShift, height-(r.Y+r.H)*scale, r.W*scale, r.H*scale)
+		}
+		b.WriteString(" f\nQ\n")
+	}
 	for _, layer := range page.Layers {
 		for _, line := range layer.Lines {
 			if len(line.Points) == 0 || line.BrushType == rm.Eraser || line.BrushType == rm.EraseArea {

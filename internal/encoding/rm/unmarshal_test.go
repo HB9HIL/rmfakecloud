@@ -104,7 +104,11 @@ func TestUnmarshalV6Highlight(t *testing.T) {
 		t.Errorf("text %q, want %q", hl.Text, want)
 	}
 	if len(hl.Rects) == 0 {
-		t.Error("highlight without rects")
+		t.Fatal("highlight without rects")
+	}
+	// rmscene: x -810.11 with the origin at the page center
+	if x := hl.Rects[0].X - float64(Width)/2; x < -810.12 || x > -810.10 {
+		t.Errorf("rect x %.2f from center, want -810.11", x)
 	}
 }
 
