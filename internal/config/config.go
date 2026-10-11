@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/ddvk/rmfakecloud/internal/email"
 	log "github.com/sirupsen/logrus"
@@ -102,7 +103,7 @@ type Config struct {
 	HWRLangOverride   string
 	HWRHost           string
 	HTTPSCookie       bool
-	TrustProxy        bool
+	TrustedProxies    []string
 	MQTTPort          string
 	ICEServers        []interface{}
 	HashSchemaVersion string
@@ -234,7 +235,7 @@ func FromEnv() *Config {
 		}
 	}
 
-	trustProxy, _ := strconv.ParseBool(os.Getenv(envTrustProxy))
+	trustedProxies := parseTrustedProxies(os.Getenv(envTrustProxy))
 
 	mqttPort := os.Getenv(envMQTTPort)
 	if mqttPort == "" {
@@ -279,12 +280,35 @@ func FromEnv() *Config {
 		HWRLangOverride:   os.Getenv(envHwrLangOverride),
 		HWRHost:           os.Getenv(envHwrHost),
 		HTTPSCookie:       httpsCookie,
-		TrustProxy:        trustProxy,
+		TrustedProxies:    trustedProxies,
 		MQTTPort:          mqttPort,
 		ICEServers:        iceServers,
 		HashSchemaVersion: hashSchemaVersion,
 	}
 	return &cfg
+}
+
+// privateNetworks are the proxies trusted with RM_TRUST_PROXY=1
+var privateNetworks = []string{"127.0.0.0/8", "::1/128", "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7"}
+
+// parseTrustedProxies reads RM_TRUST_PROXY, nil trusts no proxy
+func parseTrustedProxies(v string) []string {
+	if v == "" {
+		return nil
+	}
+	if b, err := strconv.ParseBool(v); err == nil {
+		if b {
+			return privateNetworks
+		}
+		return nil
+	}
+	var proxies []string
+	for _, p := range strings.Split(v, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			proxies = append(proxies, p)
+		}
+	}
+	return proxies
 }
 
 // normalizeICEServers expands "urls" arrays into singular "url" entries; xochitl rejects anything else
@@ -374,7 +398,7 @@ General:
 	%s		Path to the server certificate key.
 	%s	Write logs to file
 	%s Send auth cookie only via https
-	%s	Trust the proxy for X-Forwarded-For/X-Real-IP (set only if behind a proxy)
+	%s	Trust X-Forwarded-For/X-Real-IP from these proxies: 1 for loopback and private networks, or a comma separated list of IPs/CIDRs
 	%s	Hash tree schema version: "3" or "4" (default: 3)
 
 MQTT (for screenshare):

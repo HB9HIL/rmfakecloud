@@ -58,8 +58,8 @@ func (app *App) Start() {
 	log.Info("Data: ", app.cfg.DataDir)
 	log.Info("HTTP listening on port: ", app.cfg.Port)
 
-	if !app.cfg.TrustProxy {
-		app.router.SetTrustedProxies(nil)
+	if err := app.router.SetTrustedProxies(app.cfg.TrustedProxies); err != nil {
+		log.Fatal("invalid RM_TRUST_PROXY: ", err)
 	}
 
 	var tlsConfig *tls.Config
