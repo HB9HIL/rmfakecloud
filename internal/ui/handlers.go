@@ -822,7 +822,7 @@ func (app *ReactAppWrapper) screenshareJoinActive(c *gin.Context) {
 func (app *ReactAppWrapper) screenshareGetRoom(c *gin.Context) {
 	roomID := c.Param("roomId")
 
-	room := app.roomManager.GetRoom(roomID)
+	room := app.roomManager.GetRoom(roomID, userID(c))
 	if room == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
@@ -884,7 +884,7 @@ func (app *ReactAppWrapper) screenshareSendAnswer(c *gin.Context) {
 	clientID := c.GetString(browserIDContextKey)
 	uid := userID(c)
 
-	if !app.roomManager.RoomExists(roomID) {
+	if !app.roomManager.IsUserRoom(roomID, uid) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
 	}

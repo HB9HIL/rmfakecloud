@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deleting a user with the id `.` or `..` removed all users or the whole data directory (by @HB9HIL)
 - Changing the password and registering no longer return the user profile with the password hash and integration credentials (by @HB9HIL)
 - A password change ends all web UI sessions of the user, deleted users and removed admin rights apply immediately instead of after up to 24 hours (by @HB9HIL)
+- Screen sharing rooms are only visible and usable by their own user, also over MQTT (by @HB9HIL)
 
 ## [0.3.0] - 2026-10-11
 

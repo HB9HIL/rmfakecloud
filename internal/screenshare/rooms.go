@@ -63,10 +63,10 @@ func (rm *RoomManager) expireLoop() {
 	}
 }
 
-func (rm *RoomManager) Keepalive(roomID string) {
+func (rm *RoomManager) Keepalive(roomID, userID string) {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
-	if room, exists := rm.rooms[roomID]; exists {
+	if room, exists := rm.rooms[roomID]; exists && room.ownerUserID == userID {
 		room.lastActivity = time.Now().UTC()
 	}
 }
@@ -95,10 +95,14 @@ func (rm *RoomManager) CreateRoom(userID, deviceID string) *Room {
 	return room
 }
 
-func (rm *RoomManager) GetRoom(roomID string) *Room {
+// GetRoom returns the room if it belongs to the user
+func (rm *RoomManager) GetRoom(roomID, userID string) *Room {
 	rm.mu.RLock()
 	defer rm.mu.RUnlock()
-	return rm.rooms[roomID]
+	if room, exists := rm.rooms[roomID]; exists && room.ownerUserID == userID {
+		return room
+	}
+	return nil
 }
 
 func (rm *RoomManager) GetClients(roomID string) []RoomClient {
@@ -242,11 +246,13 @@ func (rm *RoomManager) DeleteAllForUser(userID string) {
 	}
 }
 
-func (rm *RoomManager) DeleteRoom(roomID string) {
+func (rm *RoomManager) DeleteRoom(roomID, userID string) {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
-	delete(rm.rooms, roomID)
-	log.Infof("Screenshare: deleted room=%s", roomID)
+	if room, exists := rm.rooms[roomID]; exists && room.ownerUserID == userID {
+		delete(rm.rooms, roomID)
+		log.Infof("Screenshare: deleted room=%s", roomID)
+	}
 }
 
 func (rm *RoomManager) FindActiveRoom(userID string) string {
@@ -267,10 +273,7 @@ func (rm *RoomManager) FindActiveRoom(userID string) string {
 	return ""
 }
 
-func (rm *RoomManager) RoomExists(roomID string) bool {
-	rm.mu.RLock()
-	defer rm.mu.RUnlock()
-
-	_, exists := rm.rooms[roomID]
-	return exists
+// IsUserRoom reports whether the room exists and belongs to the user
+func (rm *RoomManager) IsUserRoom(roomID, userID string) bool {
+	return rm.GetRoom(roomID, userID) != nil
 }

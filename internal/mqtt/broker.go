@@ -100,8 +100,9 @@ func (h *ConnectionHook) OnPacketRead(cl *mqtt.Client, pk packets.Packet) (packe
 	case packets.Pingreq:
 		packetType = "PINGREQ"
 		if h.roomManager != nil {
-			if roomID := h.roomManager.FindActiveRoom(string(cl.Properties.Username)); roomID != "" {
-				h.roomManager.Keepalive(roomID)
+			userID := string(cl.Properties.Username)
+			if roomID := h.roomManager.FindActiveRoom(userID); roomID != "" {
+				h.roomManager.Keepalive(roomID, userID)
 			}
 		}
 	case packets.Disconnect:
@@ -439,16 +440,12 @@ func (h *AuthHook) handleJoinRoom(senderClientID, userID string, msg *SignalingM
 		return
 	}
 
-	roomID := msg.RoomId
+	roomID := h.userRoom(msg.RoomId, userID)
 	if roomID == "" {
-		roomID = h.roomManager.FindActiveRoom(userID)
-	}
-
-	if roomID == "" || !h.roomManager.RoomExists(roomID) {
 		log.Infof("MQTT: room not found for join client=%s", senderClientID)
 		response := SignalingMessage{Type: "room-not-found"}
 		responseBytes, _ := json.Marshal(response)
-		responseTopic := fmt.Sprintf("user/%s/client/%s/signaling/%s", userID, senderClientID, roomID)
+		responseTopic := fmt.Sprintf("user/%s/client/%s/signaling/%s", userID, senderClientID, msg.RoomId)
 		if h.server != nil {
 			h.server.Publish(responseTopic, responseBytes, false, qos)
 		}
@@ -472,6 +469,18 @@ func (h *AuthHook) handleJoinRoom(senderClientID, userID string, msg *SignalingM
 	h.sendResponse(senderClientID, userID, roomID, &response, qos)
 }
 
+// userRoom returns the requested room if it belongs to the user, the user's active room if none was requested
+func (h *AuthHook) userRoom(roomID, userID string) string {
+	if roomID == "" {
+		return h.roomManager.FindActiveRoom(userID)
+	}
+	if !h.roomManager.IsUserRoom(roomID, userID) {
+		log.Warnf("MQTT: room=%s does not belong to user=%s", roomID, userID)
+		return ""
+	}
+	return roomID
+}
+
 func (h *AuthHook) getPeers(roomID, senderClientID string) []participant {
 	clients := h.roomManager.GetClients(roomID)
 	var peers []participant
@@ -488,9 +497,9 @@ func (h *AuthHook) handleBroadcast(senderClientID, userID string, msg *Signaling
 		return
 	}
 
-	roomID := msg.RoomId
+	roomID := h.userRoom(msg.RoomId, userID)
 	if roomID == "" {
-		roomID = h.roomManager.FindActiveRoom(userID)
+		return
 	}
 
 	peers := h.getPeers(roomID, senderClientID)
@@ -528,8 +537,8 @@ func (h *AuthHook) handleDirect(senderClientID, userID string, msg *SignalingMes
 	}
 
 	roomID := msg.RoomId
-	if roomID == "" && h.roomManager != nil {
-		roomID = h.roomManager.FindActiveRoom(userID)
+	if h.roomManager != nil {
+		roomID = h.userRoom(msg.RoomId, userID)
 	}
 
 	directMsg := map[string]interface{}{
@@ -579,7 +588,7 @@ func (h *AuthHook) OnPublish(cl *mqtt.Client, pk packets.Packet) (packets.Packet
 	}
 
 	if roomID := h.roomManager.FindActiveRoom(userID); roomID != "" {
-		h.roomManager.Keepalive(roomID)
+		h.roomManager.Keepalive(roomID, userID)
 	}
 
 	if strings.HasPrefix(pk.TopicName, "remarkable/screenshare/signaling/user/") {

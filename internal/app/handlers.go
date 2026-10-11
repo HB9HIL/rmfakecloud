@@ -1229,7 +1229,7 @@ func (app *App) screenshareCreateRoom(c *gin.Context) {
 }
 
 func (app *App) screenshareDeleteRoom(c *gin.Context) {
-	app.roomManager.DeleteRoom(c.Param("roomId"))
+	app.roomManager.DeleteRoom(c.Param("roomId"), userID(c))
 	c.Status(http.StatusNoContent)
 }
 
@@ -1250,14 +1250,14 @@ func (app *App) screenshareJoinActive(c *gin.Context) {
 }
 
 func (app *App) screenshareKeepalive(c *gin.Context) {
-	app.roomManager.Keepalive(c.Param("roomId"))
+	app.roomManager.Keepalive(c.Param("roomId"), userID(c))
 	c.Status(http.StatusOK)
 }
 
 func (app *App) screenshareGetRoom(c *gin.Context) {
 	roomID := c.Param("roomId")
 
-	room := app.roomManager.GetRoom(roomID)
+	room := app.roomManager.GetRoom(roomID, userID(c))
 	if room == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
@@ -1274,7 +1274,7 @@ func (app *App) screenshareBroadcast(c *gin.Context) {
 	roomID := c.Param("roomId")
 	deviceID := c.GetString(deviceIDKey)
 
-	if !app.roomManager.RoomExists(roomID) {
+	if !app.roomManager.IsUserRoom(roomID, userID(c)) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
 	}
@@ -1295,7 +1295,7 @@ func (app *App) screenshareDirect(c *gin.Context) {
 	roomID := c.Param("roomId")
 	deviceID := c.GetString(deviceIDKey)
 
-	if !app.roomManager.RoomExists(roomID) {
+	if !app.roomManager.IsUserRoom(roomID, userID(c)) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
 	}
