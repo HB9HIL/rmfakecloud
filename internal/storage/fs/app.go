@@ -39,6 +39,9 @@ var ErrorNotFound = errors.New("not found")
 // ErrorWrongGeneration the geration did not match
 var ErrorWrongGeneration = errors.New("wrong generation")
 
+// ErrorInvalidRootHash the root is not a sha256 hex hash
+var ErrorInvalidRootHash = errors.New("invalid root hash")
+
 // App file system document storage
 type App struct {
 	cfg *config.Config
@@ -220,6 +223,10 @@ func (app *App) uploadBlob(c *gin.Context) {
 
 	if err == ErrorWrongGeneration {
 		c.AbortWithStatus(http.StatusPreconditionFailed)
+		return
+	}
+	if err == ErrorInvalidRootHash {
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 

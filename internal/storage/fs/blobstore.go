@@ -3,6 +3,8 @@ package fs
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -28,6 +30,22 @@ const cachedTreeName = ".tree"
 // serves as root modification log and generation number source
 const historyFile = ".root.history"
 const rootBlob = "root"
+
+// validRootHash accepts sha256 hex only: the generation is the history size / 86,
+// so every history line must have the same length
+func validRootHash(h []byte) bool {
+	if len(h) != sha256.Size*2 {
+		return false
+	}
+	_, err := hex.DecodeString(string(h))
+	return err == nil
+}
+
+// BlobExists reports whether the blob is stored
+func (fs *FileSystemStorage) BlobExists(uid, blobid string) bool {
+	fi, err := os.Stat(path.Join(fs.getUserBlobPath(uid), common.Sanitize(blobid)))
+	return err == nil && !fi.IsDir()
+}
 
 // lockHistory waits for the root lock, concurrent root requests failed with
 // fslock.ErrLockHeld before
@@ -708,6 +726,17 @@ func (fs *FileSystemStorage) StoreBlob(uid, id string, stream io.Reader, lastGen
 
 	reader := stream
 	if id == rootBlob {
+		var hash []byte
+		hash, err = io.ReadAll(io.LimitReader(stream, 128))
+		if err != nil {
+			return
+		}
+		// tolerate a trailing newline from older clients
+		hash = bytes.TrimSpace(hash)
+		if !validRootHash(hash) {
+			return 0, ErrorInvalidRootHash
+		}
+
 		historyPath := path.Join(fs.getUserBlobPath(uid), historyFile)
 		var lock fslock.Handle
 		lock, err = lockHistory(historyPath)
@@ -732,9 +761,6 @@ func (fs *FileSystemStorage) StoreBlob(uid, id string, stream io.Reader, lastGen
 			return currentGen, ErrorWrongGeneration
 		}
 
-		var buf bytes.Buffer
-		tee := io.TeeReader(stream, &buf)
-
 		var hist *os.File
 		hist, err = os.OpenFile(historyPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 		if err != nil {
@@ -742,14 +768,12 @@ func (fs *FileSystemStorage) StoreBlob(uid, id string, stream io.Reader, lastGen
 		}
 		defer hist.Close()
 		t := time.Now().UTC().Format(time.RFC3339) + " "
-		hist.WriteString(t)
-		_, err = io.Copy(hist, tee)
+		_, err = hist.WriteString(t + string(hash) + "\n")
 		if err != nil {
 			return
 		}
-		hist.WriteString("\n")
 
-		reader = io.NopCloser(&buf)
+		reader = bytes.NewReader(hash)
 		size, err1 := hist.Seek(0, io.SeekCurrent)
 		if err1 != nil {
 			err = err1

@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/ddvk/rmfakecloud/internal/config"
@@ -168,5 +169,35 @@ func TestSyncRoot(t *testing.T) {
 	}
 	if v4.Hash != second.Hash || v4.Generation != second.Generation || v4.SchemaVersion != SchemaVersion {
 		t.Errorf("v4 root %+v", v4)
+	}
+}
+
+func TestSyncCheckFiles(t *testing.T) {
+	tb := newTablet(t)
+	blob := []byte("stored")
+	stored, missing := hash(string(blob)), hash("missing")
+	if status, _ := tb.do(http.MethodPut, "/sync/v3/files/"+stored, blob); status != http.StatusOK {
+		t.Fatalf("write blob: status %d", status)
+	}
+
+	var res messages.MissingFiles
+	if status := tb.json(http.MethodPost, "/sync/v3/check-files", messages.CheckFiles{Files: []string{stored, missing}}, &res); status != http.StatusOK {
+		t.Fatalf("check-files: status %d", status)
+	}
+	if len(res.MissingFiles) != 1 || res.MissingFiles[0] != missing {
+		t.Errorf("missing files %v, want [%s]", res.MissingFiles, missing)
+	}
+}
+
+// the generation is derived from the history size, only sha256 hex roots keep it counting
+func TestSyncRootRejectsInvalidHash(t *testing.T) {
+	tb := newTablet(t)
+	for _, h := range []string{"short", hash("x") + "0", hash("x")[:32] + "\n" + hash("x")[33:], strings.Repeat("g", 64)} {
+		if status := tb.json(http.MethodPut, "/sync/v3/root", messages.SyncRootV3Request{Hash: h}, nil); status != http.StatusBadRequest {
+			t.Errorf("root %q: status %d, want 400", h, status)
+		}
+	}
+	if status := tb.json(http.MethodGet, "/sync/v3/root", nil, nil); status != http.StatusNotFound {
+		t.Errorf("an invalid root was stored: status %d", status)
 	}
 }

@@ -758,6 +758,10 @@ func (app *App) syncUpdateRootV3(c *gin.Context) {
 		c.AbortWithStatus(http.StatusPreconditionFailed)
 		return
 	}
+	if err == fs.ErrorInvalidRootHash {
+		badReq(c, "invalid root hash")
+		return
+	}
 	if err != nil {
 		log.Error(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -871,8 +875,7 @@ func (app *App) checkFilesPresence(c *gin.Context) {
 	mfs := messages.MissingFiles{}
 
 	for _, fileid := range req.Files {
-		_, _, err := app.blobStorer.GetBlobURL(uid, fileid, false)
-		if err != nil {
+		if !app.blobStorer.BlobExists(uid, fileid) {
 			mfs.MissingFiles = append(mfs.MissingFiles, fileid)
 		}
 	}

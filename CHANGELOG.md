@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixes
 - Documents with a fractional text scale from newer firmware can be exported again ([ddvk#499](https://github.com/ddvk/rmfakecloud/pull/499)) (by @cyc115)
 - Web screen sharing decodes frames that arrive in several messages correctly ([ddvk#457](https://github.com/ddvk/rmfakecloud/pull/457)) (by @rmitchellscott)
+- `check-files` reports blobs missing on the server, so the tablet uploads them again (by @HB9HIL)
+- The sync root only accepts sha256 hashes, other values could break the generation counter (by @HB9HIL)
 
 ## [0.3.1] - 2026-10-11
 
