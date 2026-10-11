@@ -37,8 +37,6 @@ For the possible environment variables, please have a look in the [configuration
 
 ## Rebuild the image
 
-You can use the script `dockerbuild.sh` or there is a `make` rule:
-
 ```sh
-make docker
+make image
 ```

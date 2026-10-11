@@ -10,10 +10,10 @@ GOFILES += $(ASSETS)
 UIFILES := $(shell find ui/src)
 UIFILES += $(shell find ui/public)
 UIFILES += ui/package.json
-TARGETS := $(addprefix $(OUT_DIR)/$(BINARY)-, x64 armv6 armv7 arm64 win64 docker)
+TARGETS := $(addprefix $(OUT_DIR)/$(BINARY)-, x64 armv6 armv7 arm64 win64)
 PNPM	= cd ui; pnpm
 
-.PHONY: all run runui clean test testgo testui
+.PHONY: all build dev image lint test clean
 
 build: $(OUT_DIR)/$(BINARY)-x64
 
@@ -34,20 +34,15 @@ $(OUT_DIR)/$(BINARY)-win64:$(GOFILES)
 $(OUT_DIR)/$(BINARY)-arm64:$(GOFILES)
 	GOARCH=arm64 $(BUILD)
 
-$(OUT_DIR)/$(BINARY)-docker:$(GOFILES)
-	CGO_ENABLED=0 $(BUILD)
+dev:
+	mkdir -p data
+	DEV_UID=$$(id -u) DEV_GID=$$(id -g) docker compose up --build --watch
 
-container: $(OUT_DIR)/$(BINARY)-docker
-	docker build -t rmfakecloud -f Dockerfile.make .
-	
-run: $(ASSETS)
-	go run $(CMD) $(ARG)
+image:
+	docker build -t rmfakecloud --build-arg VERSION=$(VERSION) .
 
 $(ASSETS): $(UIFILES) ui/pnpm-lock.yaml
-	#@cp ui/node_modules/pdfjs-dist/build/pdf.worker.js ui/public/
 	$(PNPM) build
-	@#remove unneeded stuff, todo: eject
-	@rm ui/build/service-worker.js ui/build/precache-manifest* ui/build/asset-manifest.json 2> /dev/null || true
 
 ui/pnpm-lock.yaml: ui/node_modules ui/package.json
 	$(PNPM) i
@@ -56,19 +51,17 @@ ui/pnpm-lock.yaml: ui/node_modules ui/package.json
 ui/node_modules:
 	mkdir -p $@
 
-runui: ui/pnpm-lock.yaml
-	$(PNPM) run dev
-
 clean:
 	rm -f $(OUT_DIR)/*
 	rm -fr $(ASSETS)
 
-test: testui testgo
+# same checks as CI, ui/dist is only built if missing
+lint:
+	@test -e $(ASSETS) || $(MAKE) $(ASSETS)
+	@test -z "$$(gofmt -l cmd internal)" || { gofmt -l cmd internal; exit 1; }
+	go vet ./...
 
-testui:
-	echo "TODO: fix this"
-	#CI=true $(PNPM) test
-
-testgo:
+test:
+	@test -e $(ASSETS) || $(MAKE) $(ASSETS)
 	go test ./...
 

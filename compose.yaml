@@ -1,0 +1,49 @@
+# Local development, start with `make dev`
+# UI with hot reload: http://localhost:3001, backend: http://localhost:3000, mails: http://localhost:8025
+services:
+  rmfakecloud:
+    build: .
+    user: "${DEV_UID:-0}:${DEV_GID:-0}"
+    ports:
+      - "3000:3000"
+    environment:
+      JWT_SECRET_KEY: dev
+      LOGLEVEL: debug
+      RM_SMTP_SERVER: mailpit:1025
+      RM_SMTP_NOTLS: 1
+    volumes:
+      - ./data:/data
+    develop:
+      watch:
+        - path: ./cmd
+          action: rebuild
+        - path: ./internal
+          action: rebuild
+        - path: ./go.mod
+          action: rebuild
+        - path: ./go.sum
+          action: rebuild
+
+  ui:
+    image: node:26
+    working_dir: /src
+    # node >= 25 no longer ships corepack, it picks pnpm from packageManager in package.json
+    command: sh -c "npm install -g corepack && corepack enable && pnpm install && pnpm dev --host"
+    ports:
+      - "3001:3001"
+    environment:
+      API_URL: http://rmfakecloud:3000
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
+      CI: "true"
+    volumes:
+      - ./ui:/src
+      # linux binaries (sass-embedded), kept apart from the host's node_modules
+      - ui_node_modules:/src/node_modules
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+
+volumes:
+  ui_node_modules:

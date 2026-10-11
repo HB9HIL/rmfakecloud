@@ -54,7 +54,10 @@ See the [documentation](https://hb9hil.github.io/rmfakecloud/remarkable/setup/) 
 
 ## Development
 
-run `./dev.sh` which should start the UI and backend
+`make dev` starts everything in docker compose: the UI with hot reload on
+http://localhost:3001, the backend on http://localhost:3000 (rebuilt on Go
+changes) and mailpit for outgoing mails on http://localhost:8025. The first
+login creates the admin user. `make test` and `make lint` run natively with Go.
 
 Releases: note the changes under `## [Unreleased]` in `CHANGELOG.md`, move them
 into a `## [X.Y.Z] - date` section and push the tag `vX.Y.Z`. The release
