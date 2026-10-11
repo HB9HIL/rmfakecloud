@@ -29,6 +29,19 @@ const cachedTreeName = ".tree"
 const historyFile = ".root.history"
 const rootBlob = "root"
 
+// lockHistory waits for the root lock, concurrent root requests failed with
+// fslock.ErrLockHeld before
+func lockHistory(historyPath string) (fslock.Handle, error) {
+	deadline := time.Now().Add(10 * time.Second)
+	return fslock.LockBlocking(historyPath, func() error {
+		if time.Now().After(deadline) {
+			return fslock.ErrLockHeld
+		}
+		time.Sleep(10 * time.Millisecond)
+		return nil
+	})
+}
+
 // GetCachedTree returns the cached blob tree for the user
 func (fs *FileSystemStorage) GetCachedTree(uid string) (t *models.HashTree, err error) {
 	blobStorage := &LocalBlobStorage{
@@ -646,7 +659,7 @@ func (fs *FileSystemStorage) LoadBlob(uid, blobid string) (reader io.ReadCloser,
 	log.Debugln("Fullpath:", blobPath)
 	if blobid == rootBlob {
 		historyPath := path.Join(fs.getUserBlobPath(uid), historyFile)
-		lock, err := fslock.Lock(historyPath)
+		lock, err := lockHistory(historyPath)
 		if err != nil {
 			log.Error("cannot obtain lock")
 			return nil, 0, 0, "", err
@@ -692,7 +705,7 @@ func (fs *FileSystemStorage) StoreBlob(uid, id string, stream io.Reader, lastGen
 	if id == rootBlob {
 		historyPath := path.Join(fs.getUserBlobPath(uid), historyFile)
 		var lock fslock.Handle
-		lock, err = fslock.Lock(historyPath)
+		lock, err = lockHistory(historyPath)
 		if err != nil {
 			log.Error("cannot obtain lock")
 			return 0, err

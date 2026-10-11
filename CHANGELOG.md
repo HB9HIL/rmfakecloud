@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Chore
 - Cypress runs in Chrome instead of the deprecated Electron (by @HB9HIL)
 
+#### Fixes
+- Concurrent sync requests wait for the root lock instead of failing with 500 (by @HB9HIL)
+- The cached sync tree is written atomically, a crash no longer leaves it truncated (by @HB9HIL)
+
 ## [0.2.1] - 2026-10-11
 
 #### Fixes

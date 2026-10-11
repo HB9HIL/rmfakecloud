@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 
@@ -87,8 +88,20 @@ func (t *HashTree) Save(cacheFile string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(cacheFile, b, 0644)
-	return err
+	// write to a temp file and rename, so readers never see a partial tree
+	tmp, err := os.CreateTemp(filepath.Dir(cacheFile), ".tree-")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmp.Name())
+	if _, err = tmp.Write(b); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err = tmp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmp.Name(), cacheFile)
 }
 
 func parseEntry(line string) (*HashEntry, error) {
