@@ -3,7 +3,7 @@ LDFLAGS := "-s -w -X main.version=$(VERSION)"
 OUT_DIR := dist
 CMD := ./cmd/rmfakecloud
 BINARY := rmfakecloud
-BUILD = go build -ldflags $(LDFLAGS) -o $(@) $(CMD) 
+BUILD = CGO_ENABLED=0 go build -ldflags $(LDFLAGS) -o $(@) $(CMD)
 ASSETS = ui/dist
 GOFILES := $(shell find . -iname '*.go' ! -iname "*_test.go")
 GOFILES += $(ASSETS)
@@ -20,19 +20,19 @@ build: $(OUT_DIR)/$(BINARY)-x64
 all: $(TARGETS)
 
 $(OUT_DIR)/$(BINARY)-x64:$(GOFILES)
-	GOOS=linux $(BUILD)
+	GOOS=linux GOARCH=amd64 $(BUILD)
 
 $(OUT_DIR)/$(BINARY)-armv6:$(GOFILES)
-	GOARCH=arm GOARM=6 $(BUILD)
+	GOOS=linux GOARCH=arm GOARM=6 $(BUILD)
 
 $(OUT_DIR)/$(BINARY)-armv7:$(GOFILES)
-	GOARCH=arm GOARM=7 $(BUILD)
+	GOOS=linux GOARCH=arm GOARM=7 $(BUILD)
 
 $(OUT_DIR)/$(BINARY)-win64:$(GOFILES)
-	GOOS=windows $(BUILD)
+	GOOS=windows GOARCH=amd64 $(BUILD)
 
 $(OUT_DIR)/$(BINARY)-arm64:$(GOFILES)
-	GOARCH=arm64 $(BUILD)
+	GOOS=linux GOARCH=arm64 $(BUILD)
 
 dev:
 	mkdir -p data
