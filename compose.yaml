@@ -27,14 +27,11 @@ services:
   ui:
     image: node:26
     working_dir: /src
-    # node >= 25 no longer ships corepack, it picks pnpm from packageManager in package.json
-    command: sh -c "npm install -g corepack && corepack enable && pnpm install && pnpm dev --host"
+    command: sh -c "npm install && npm run dev -- --host"
     ports:
       - "3001:3001"
     environment:
       API_URL: http://rmfakecloud:3000
-      COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
-      CI: "true"
     volumes:
       - ./ui:/src
       # linux binaries (sass-embedded), kept apart from the host's node_modules

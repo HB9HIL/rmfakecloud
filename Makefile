@@ -11,7 +11,7 @@ UIFILES := $(shell find ui/src)
 UIFILES += $(shell find ui/public)
 UIFILES += ui/package.json
 TARGETS := $(addprefix $(OUT_DIR)/$(BINARY)-, x64 armv6 armv7 arm64 win64)
-PNPM	= cd ui; pnpm
+NPM	= cd ui; npm
 
 .PHONY: all build dev image lint test clean
 
@@ -41,11 +41,11 @@ dev:
 image:
 	docker build -t rmfakecloud --build-arg VERSION=$(VERSION) .
 
-$(ASSETS): $(UIFILES) ui/pnpm-lock.yaml
-	$(PNPM) build
+$(ASSETS): $(UIFILES) ui/package-lock.json
+	$(NPM) run build
 
-ui/pnpm-lock.yaml: ui/node_modules ui/package.json
-	$(PNPM) i
+ui/package-lock.json: ui/node_modules ui/package.json
+	$(NPM) install
 	@touch -mr $(shell ls -Atd $? | head -1) $@
 
 ui/node_modules:

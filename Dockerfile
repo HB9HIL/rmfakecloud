@@ -1,17 +1,11 @@
 ARG VERSION=0.0.0
 FROM --platform=$BUILDPLATFORM node:26 AS uibuilder
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-# node >= 25 no longer ships corepack, it picks pnpm from packageManager in package.json
-RUN npm install -g corepack && corepack enable pnpm
-
 WORKDIR /src
-COPY ui/package.json ui/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY ui/package.json ui/package-lock.json ./
+RUN npm ci
 
 COPY ui .
-RUN pnpm build
+RUN npm run build
 
 FROM golang:1.26-bookworm AS gobuilder
 ARG VERSION
