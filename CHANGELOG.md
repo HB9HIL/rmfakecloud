@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Fixes
+- The LocalFS integration no longer allows access outside of its folder via `..` (by @HB9HIL)
+- Logout clears the session cookie (by @HB9HIL)
+- User ids `.` and `..` are rejected (by @HB9HIL)
+- Email bodies are encoded as quoted-printable, as declared (by @HB9HIL)
+- The JWT secret, WebDAV passwords and cookies are no longer logged (by @HB9HIL)
+
+#### Chore
+- Removed the unused `ui/public/pdf.worker.js` (by @HB9HIL)
+
 ## [0.2.0] - 2026-10-11
 
 #### Chore
