@@ -46,7 +46,7 @@ const Integrations = () => {
     );
   }
 
-  const newIntegration = e => {
+  const newIntegration = () => {
     setState({
       showModal: NewIntegration,
       modalIntegration: null
