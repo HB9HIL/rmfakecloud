@@ -165,6 +165,17 @@ func TestUnmarshalV6MoreColors(t *testing.T) {
 	}
 }
 
+// strokes of newer firmware carry an explicit color, e.g. a shader with a custom color
+func TestUnmarshalV6LineRGBA(t *testing.T) {
+	rm := load(t, "Colors_argb.rm", V6)
+	for _, l := range lines(rm) {
+		if l.ColorRGBA != nil {
+			return
+		}
+	}
+	t.Error("no line with an RGBA color")
+}
+
 // the values are part of the file format and match rmscene's PenColor enum
 func TestBrushColorValues(t *testing.T) {
 	for i, c := range []BrushColor{Black, Grey, White, HighlightYellow, HighlightGreen, HighlightPink,

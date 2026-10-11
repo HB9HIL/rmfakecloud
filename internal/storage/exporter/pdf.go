@@ -195,6 +195,9 @@ func drawStrokes(page *rm.Rm, scale, xShift, height float64) []byte {
 			if transparent && (line.BrushColor == rm.Black || line.BrushColor == rm.Grey || line.BrushColor == rm.White) {
 				color = brushColors[rm.HighlightYellow]
 			}
+			if c := line.ColorRGBA; c != nil {
+				color = [3]float64{float64(c[0]) / 255, float64(c[1]) / 255, float64(c[2]) / 255}
+			}
 			fmt.Fprintf(&b, "q %.3f %.3f %.3f RG\n", color[0], color[1], color[2])
 
 			if transparent {

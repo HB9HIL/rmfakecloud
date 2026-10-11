@@ -171,6 +171,24 @@ func (r *v6Reader) readTaggedDouble(index uint32) (float64, error) {
 	return r.readFloat64()
 }
 
+// readColorOptional reads an optional packed ARGB color before end and
+// returns it as (R, G, B, A) per rmscene's read_color_optional.
+func (r *v6Reader) readColorOptional(index uint32, end int) *[4]uint8 {
+	if r.pos >= end || !r.checkTag(index, tagByte4) {
+		return nil
+	}
+	packed, err := r.readUint32()
+	if err != nil {
+		return nil
+	}
+	return &[4]uint8{
+		uint8((packed >> 16) & 0xFF),
+		uint8((packed >> 8) & 0xFF),
+		uint8(packed & 0xFF),
+		uint8((packed >> 24) & 0xFF),
+	}
+}
+
 func (r *v6Reader) readSubblockHeader(index uint32) (uint32, error) {
 	if err := r.expectTag(index, tagLength4); err != nil {
 		return 0, err
@@ -382,12 +400,17 @@ func parseV6LineBlock(r *v6Reader, blockVersion uint8, blockEnd int) (*Line, err
 
 	r.pos = pointsEnd
 
-	// Skip remaining fields (timestamp, move_id)
+	// timestamp, optional move_id, then the optional RGBA color (tag 8)
+	var rgba *[4]uint8
+	if r.readTaggedId(6) == nil && (!r.checkTag(7, tagID) || r.readCrdtId() == nil) {
+		rgba = r.readColorOptional(8, valueEnd)
+	}
 	r.pos = valueEnd
 
 	line := &Line{
 		BrushType:  BrushType(pen),
 		BrushColor: BrushColor(color),
+		ColorRGBA:  rgba,
 		BrushSize:  BrushSize(thicknessScale),
 		Points:     points,
 	}
@@ -502,21 +525,8 @@ func parseV6GlyphBlock(r *v6Reader, blockEnd int) (*Highlight, error) {
 	}
 	r.pos = rectsSubEnd
 
-	// Optional explicit RGBA color (firmware 3.6+, tag 10, byte4).
-	// Packed uint32 unpacks to (R, G, B, A) per rmscene's read_color_optional.
-	var rgba *[4]uint8
-	if r.pos < valueEnd && r.checkTag(10, tagByte4) {
-		packed, err := r.readUint32()
-		if err != nil {
-			return nil, err
-		}
-		rgba = &[4]uint8{
-			uint8((packed >> 16) & 0xFF),
-			uint8((packed >> 8) & 0xFF),
-			uint8(packed & 0xFF),
-			uint8((packed >> 24) & 0xFF),
-		}
-	}
+	// Optional explicit RGBA color (firmware 3.6+)
+	rgba := r.readColorOptional(10, valueEnd)
 
 	r.pos = valueEnd
 

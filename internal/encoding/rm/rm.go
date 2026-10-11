@@ -151,9 +151,13 @@ type Layer struct {
 }
 
 // A Line is composed of points.
+//
+// ColorRGBA is set when the v6 file carried an explicit RGBA value
+// (newer firmware). Order is R, G, B, A.
 type Line struct {
 	BrushType  BrushType
 	BrushColor BrushColor
+	ColorRGBA  *[4]uint8
 	Padding    uint32
 	Unknown    float32
 	BrushSize  BrushSize
