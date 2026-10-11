@@ -233,14 +233,14 @@ func (app *App) uploadBlob(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// SignURLParams signs url params
+// SignURLParams signs url params, each part is length prefixed so no part can shift into the next
 func SignURLParams(parts []string, key []byte) (string, error) {
 	h := hmac.New(sha256.New, key)
 	for i, s := range parts {
 		if s == "" {
 			return "", fmt.Errorf("index %d is empty", i)
 		}
-		h.Write([]byte(s))
+		fmt.Fprintf(h, "%d:%s", len(s), s)
 	}
 	hs := h.Sum(nil)
 	s := hex.EncodeToString(hs)

@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"net/url"
 	"os"
 	"path"
 	"testing"
@@ -33,5 +34,45 @@ func TestRootLockWaits(t *testing.T) {
 
 	if err := <-done; err != ErrorNotFound {
 		t.Errorf("got %v, want %v", err, ErrorNotFound)
+	}
+}
+
+func TestSignURLParamsBoundaries(t *testing.T) {
+	key := []byte("key")
+	a, err := SignURLParams([]string{"ab", "c", "1", "read"}, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := SignURLParams([]string{"a", "bc", "1", "read"}, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a == b {
+		t.Error("shifted parts give the same signature")
+	}
+}
+
+func TestBlobURLVerifies(t *testing.T) {
+	fs := NewStorage(&config.Config{DataDir: t.TempDir(), JWTSecretKey: []byte("key")})
+	if _, _, err := fs.GetBlobURL("test", "../x", false); err == nil {
+		t.Error("signed an id with path separators")
+	}
+
+	blobURL, _, err := fs.GetBlobURL("test", "abc", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u, err := url.Parse(blobURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	q := u.Query()
+	parts := []string{q.Get(paramUID), q.Get(paramBlobID), q.Get(paramExp), q.Get(paramScope)}
+	if err := VerifyURLParams(parts, q.Get(paramExp), q.Get(paramSignature), fs.Cfg.JWTSecretKey); err != nil {
+		t.Errorf("own url does not verify: %v", err)
+	}
+	parts[0] = "other"
+	if err := VerifyURLParams(parts, q.Get(paramExp), q.Get(paramSignature), fs.Cfg.JWTSecretKey); err == nil {
+		t.Error("url verifies for another user")
 	}
 }

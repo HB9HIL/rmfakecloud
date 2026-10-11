@@ -625,6 +625,11 @@ func createMetadataFile(metadata models.MetadataFile) (r io.Reader, filehash str
 
 // GetBlobURL return a url for a file to store
 func (fs *FileSystemStorage) GetBlobURL(uid, blobid string, write bool) (docurl string, exp time.Time, err error) {
+	// the blob routes sanitize the id, sign only ids that stay the same
+	if blobid != common.Sanitize(blobid) {
+		err = errors.New("invalid blob id")
+		return
+	}
 	uploadRL := fs.Cfg.StorageURL
 	exp = time.Now().Add(time.Minute * config.ReadStorageExpirationInMinutes)
 	strExp := strconv.FormatInt(exp.Unix(), 10)
