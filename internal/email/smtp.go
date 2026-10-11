@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"mime/quotedprintable"
 	"net"
 	"net/mail"
 	"net/smtp"
@@ -199,14 +200,23 @@ func (b *Builder) Send(cfg *SMTPConfig) (err error) {
 	msgBuilder.WriteString("Content-Transfer-Encoding: quoted-printable\r\n")
 	msgBuilder.WriteString("Content-Disposition: inline\r\n")
 	msgBuilder.WriteString("\r\n")
-	msgBuilder.WriteString(b.Body)
 
 	msg := msgBuilder.String()
 
-	log.Debug("mime msg:\n", msg)
+	log.Debug("mime msg:\n", msg, b.Body)
 
 	_, err = w.Write([]byte(msg))
 	if err != nil {
+		return err
+	}
+
+	// quoted-printable as declared, it also encodes the "=" of the delimiter
+	// so the body cannot end its own part
+	qp := quotedprintable.NewWriter(w)
+	if _, err = qp.Write([]byte(b.Body)); err != nil {
+		return err
+	}
+	if err = qp.Close(); err != nil {
 		return err
 	}
 
