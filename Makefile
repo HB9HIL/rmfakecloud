@@ -66,8 +66,10 @@ test:
 	go test -race ./...
 
 # Cypress (e2e/) against an empty instance built from the Dockerfile
+# Electron is deprecated in Cypress, the browser must be installed locally
+BROWSER ?= chrome
 e2e:
 	docker compose up --build --detach --force-recreate e2e
 	cd e2e && npm ci && rm -rf cypress/screenshots cypress/videos
 	@for i in $$(seq 30); do curl -sf -o /dev/null http://localhost:3002/health && break; sleep 1; done
-	(cd e2e && npx cypress run); status=$$?; docker compose rm --stop --force e2e; exit $$status
+	(cd e2e && npx cypress run --browser $(BROWSER)); status=$$?; docker compose rm --stop --force e2e; exit $$status

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Chore
+- Cypress runs in Chrome instead of the deprecated Electron (by @HB9HIL)
+
 ## [0.2.1] - 2026-10-11
 
 #### Fixes

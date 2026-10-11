@@ -59,7 +59,8 @@ http://localhost:3001, the backend on http://localhost:3000 (rebuilt on Go
 changes) and mailpit for outgoing mails on http://localhost:8025. The first
 login creates the admin user. `make test` and `make lint` run natively with Go.
 `make e2e` runs the Cypress tests in `e2e/` against an empty instance built
-from the Dockerfile; screenshots of failed tests land in `e2e/cypress/screenshots`.
+from the Dockerfile in Chrome (`make e2e BROWSER=chromium` for another installed
+browser); screenshots of failed tests land in `e2e/cypress/screenshots`.
 For writing tests start that instance with `docker compose up -d --build e2e`
 and open Cypress with `cd e2e && npx cypress open`. On Linux Cypress needs the
 [system dependencies](https://docs.cypress.io/app/get-started/install-cypress#Linux-Prerequisites).
