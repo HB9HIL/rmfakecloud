@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-11
+
 #### Chore
 - Simplify local development (by @HB9HIL)
 - The UI uses npm instead of pnpm (by @HB9HIL)
