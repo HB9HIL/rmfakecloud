@@ -40,7 +40,7 @@ type User struct {
 	ID            string
 	Email         string
 	EmailVerified bool
-	Password      string
+	Password      string `json:"-"`
 	Name          string
 	Nickname      string
 	GivenName     string

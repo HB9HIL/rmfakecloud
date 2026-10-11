@@ -83,7 +83,7 @@ func (app *ReactAppWrapper) register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.Status(http.StatusOK)
 }
 
 func (app *ReactAppWrapper) login(c *gin.Context) {
@@ -240,7 +240,7 @@ func (app *ReactAppWrapper) changePassword(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.Status(http.StatusOK)
 }
 
 func (app *ReactAppWrapper) newCode(c *gin.Context) {

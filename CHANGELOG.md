@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `RM_TRUST_PROXY=1` trusted X-Forwarded-For from any client, which allowed bypassing the login limiter and fail2ban. It now only trusts proxies on loopback and private networks, or a list of proxy IPs/CIDRs (by @HB9HIL)
 - The signature of sync blob URLs could be reused for another user's blobs on instances with several users (by @HB9HIL)
 - Deleting a user with the id `.` or `..` removed all users or the whole data directory (by @HB9HIL)
+- Changing the password and registering no longer return the user profile with the password hash and integration credentials (by @HB9HIL)
 
 ## [0.3.0] - 2026-10-11
 
