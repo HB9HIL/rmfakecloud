@@ -63,5 +63,5 @@ lint:
 
 test:
 	@test -e $(ASSETS) || $(MAKE) $(ASSETS)
-	go test ./...
+	go test -race ./...
 
