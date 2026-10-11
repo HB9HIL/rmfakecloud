@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Fixes
+- Documents with a fractional text scale from newer firmware can be exported again ([ddvk#499](https://github.com/ddvk/rmfakecloud/pull/499)) (by @cyc115)
+- Web screen sharing decodes frames that arrive in several messages correctly ([ddvk#457](https://github.com/ddvk/rmfakecloud/pull/457)) (by @rmitchellscott)
+
 ## [0.3.1] - 2026-10-11
 
 Security Release
