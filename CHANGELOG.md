@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-11
+
 #### Features
 - New look for the web UI: a paper-like design, light and dark theme follow the system and can be switched (by @HB9HIL)
 
