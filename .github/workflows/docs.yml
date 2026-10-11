@@ -1,16 +1,12 @@
-name: mkdocs
+name: Docs
+
+# mkdocs to the gh-pages branch
 on:
-  push:
-    branches:
-      - master
-      - main
-    #paths:
-    #  - 'docs/**'
+  workflow_call:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

@@ -1,66 +1,11 @@
-name: Create release on tag push
+name: Release
 
+# Binaries with the UI from the tests workflow, release notes from the changelog workflow
 on:
-  push:
-    tags:
-      - 'v*'
-
-permissions:
-  contents: write
+  workflow_call:
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          go-version-file: go.mod
-      # The binary embeds ui/dist, a placeholder is enough to compile and test
-      - run: mkdir -p ui/dist && touch ui/dist/index.html
-      - run: go vet ./...
-      - run: go test -race ./...
-      - name: Extract release notes from CHANGELOG
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          awk -v ver="$version" '
-            /^## \[/ {
-              if (found) exit
-              if (index($0, "[" ver "]")) { found=1; next }
-            }
-            found { print }
-          ' CHANGELOG.md > release_notes.md
-          if [ ! -s release_notes.md ]; then
-            echo "::error::No changelog section found for version $version"
-            exit 1
-          fi
-      - uses: actions/upload-artifact@v7
-        with:
-          name: release-notes
-          path: release_notes.md
-
-  ui:
-    needs: check
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ui
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: npm
-          cache-dependency-path: ui/package-lock.json
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-artifact@v7
-        with:
-          name: ui-dist
-          path: ui/dist
-
-  build:
-    needs: ui
+  binaries:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -89,9 +34,10 @@ jobs:
         with:
           name: rmfakecloud-${{ matrix.name }}
           path: dist/rmfakecloud-${{ matrix.name }}
+          retention-days: 1
 
-  release:
-    needs: build
+  publish:
+    needs: binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v8

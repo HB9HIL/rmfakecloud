@@ -4,20 +4,7 @@ name: Docker image
 # Tag push vX.Y.Z: image X.Y.Z and latest.
 # Manual run: image tagged with the git describe of the selected branch.
 on:
-  push:
-    branches:
-      - master
-    tags:
-      - 'v*'
-  workflow_dispatch:
-
-concurrency:
-  group: docker-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-  packages: write
+  workflow_call:
 
 env:
   IMAGE: ghcr.io/hb9hil/rmfakecloud

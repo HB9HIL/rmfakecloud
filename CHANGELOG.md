@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tests for the `.rm` parser, the archive and the PDF export (by @HB9HIL)
 - Test for pairing and the sync API of the tablet (by @HB9HIL)
 - Cypress tests for the web UI, run with `make e2e` and in CI (by @HB9HIL)
+- One CI workflow instead of five, images and releases are only published after the tests pass (by @HB9HIL)
 
 #### Fixes
 - A stale generation on `PUT /sync/v3/root` returns 412 instead of 500 (by @HB9HIL)
