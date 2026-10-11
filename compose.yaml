@@ -42,5 +42,16 @@ services:
     ports:
       - "8025:8025"
 
+  # empty instance for the Cypress tests, started by `make e2e`
+  e2e:
+    profiles: [e2e]
+    build: .
+    ports:
+      - "3002:3000"
+    environment:
+      JWT_SECRET_KEY: e2e
+    tmpfs:
+      - /data
+
 volumes:
   ui_node_modules:

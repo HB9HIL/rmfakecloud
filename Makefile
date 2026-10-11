@@ -13,7 +13,7 @@ UIFILES += ui/package.json
 TARGETS := $(addprefix $(OUT_DIR)/$(BINARY)-, x64 armv6 armv7 arm64 win64)
 NPM	= cd ui; npm
 
-.PHONY: all build dev image lint test clean
+.PHONY: all build dev image lint test e2e clean
 
 build: $(OUT_DIR)/$(BINARY)-x64
 
@@ -65,3 +65,9 @@ test:
 	@test -e $(ASSETS) || $(MAKE) $(ASSETS)
 	go test -race ./...
 
+# Cypress (e2e/) against an empty instance built from the Dockerfile
+e2e:
+	docker compose up --build --detach --force-recreate e2e
+	cd e2e && npm ci && rm -rf cypress/screenshots cypress/videos
+	@for i in $$(seq 30); do curl -sf -o /dev/null http://localhost:3002/health && break; sleep 1; done
+	(cd e2e && npx cypress run); status=$$?; docker compose rm --stop --force e2e; exit $$status
