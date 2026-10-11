@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Container, Alert, Spinner, Button } from "react-bootstrap";
 import { BsGearFill, BsFullscreenExit, BsArrowCounterclockwise, BsArrowClockwise } from "react-icons/bs";
-import { inflate } from "pako";
+import { Inflate, Z_SYNC_FLUSH } from "pako";
 import constants from "../../common/constants";
 
 const MSG = {
@@ -59,6 +59,23 @@ class FrameAssembler {
   }
 }
 
+// The tablet sends each frame as a zlib stream without a final block. pako >= 2
+// rejects that in inflate() ("buffer error"), a flushed push returns the data.
+function inflateFrame(compressed) {
+  const inf = new Inflate();
+  const chunks = [];
+  inf.onData = (chunk) => chunks.push(chunk);
+  inf.push(compressed, Z_SYNC_FLUSH);
+  if (inf.err) throw new Error(inf.msg);
+  const out = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+  let pos = 0;
+  for (const c of chunks) {
+    out.set(c, pos);
+    pos += c.length;
+  }
+  return out;
+}
+
 function decodeFramebuffer(data, view) {
   const rectCount = view.getUint16(1, false);
   const deflatedSize = view.getUint32(3, false);
@@ -66,8 +83,8 @@ function decodeFramebuffer(data, view) {
     throw new Error("deflated size exceeds message buffer");
   }
   const compressed = new Uint8Array(data.slice(HEADER_SIZE, HEADER_SIZE + deflatedSize));
-  const raw = inflate(compressed);
-  if (!raw) throw new Error("inflate produced no output (truncated stream)");
+  const raw = inflateFrame(compressed);
+  if (!raw.length) throw new Error("inflate produced no output (truncated stream)");
 
   const rv = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
   const rects = [];
