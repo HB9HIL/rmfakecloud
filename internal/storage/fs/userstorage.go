@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/ddvk/rmfakecloud/internal/common"
 	"github.com/ddvk/rmfakecloud/internal/config"
 	"github.com/ddvk/rmfakecloud/internal/model"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,14 @@ const (
 	userDir     = "users"
 	profileName = ".userprofile"
 )
+
+var errInvalidUserID = errors.New("invalid user id")
+
+// validUserID rejects ids that would resolve to the users directory or above it
+func validUserID(uid string) bool {
+	id := common.SanitizeUid(uid)
+	return uid != "" && id != "." && id != ".."
+}
 
 // NewStorage new file system storage
 func NewStorage(cfg *config.Config) *FileSystemStorage {
@@ -33,8 +42,8 @@ func NewStorage(cfg *config.Config) *FileSystemStorage {
 
 // GetUser retrieves a user from the storage
 func (fs *FileSystemStorage) GetUser(uid string) (user *model.User, err error) {
-	if uid == "" {
-		err = errors.New("empty user")
+	if !validUserID(uid) {
+		err = errInvalidUserID
 		return
 	}
 	profilePath := fs.getPathFromUser(uid, profileName)
@@ -84,8 +93,8 @@ func (fs *FileSystemStorage) GetUsers() (users []*model.User, err error) {
 
 // RegisterUser blah
 func (fs *FileSystemStorage) RegisterUser(u *model.User) (err error) {
-	if u.ID == "" {
-		err = errors.New("empty id")
+	if !validUserID(u.ID) {
+		err = errInvalidUserID
 		return
 	}
 	userBlobPath := fs.getUserBlobPath(u.ID)
@@ -120,8 +129,8 @@ func (fs *FileSystemStorage) RegisterUser(u *model.User) (err error) {
 
 // UpdateUser updates the user
 func (fs *FileSystemStorage) UpdateUser(u *model.User) (err error) {
-	if u.ID == "" {
-		err = errors.New("empty id")
+	if !validUserID(u.ID) {
+		err = errInvalidUserID
 		return
 	}
 
@@ -144,8 +153,8 @@ func (fs *FileSystemStorage) UpdateUser(u *model.User) (err error) {
 
 // RemoveUser remove the user and their data
 func (fs *FileSystemStorage) RemoveUser(uid string) (err error) {
-	if uid == "" {
-		err = errors.New("empty id")
+	if !validUserID(uid) {
+		err = errInvalidUserID
 		return
 	}
 
