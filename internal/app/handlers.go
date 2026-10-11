@@ -884,11 +884,13 @@ func (app *App) checkFilesPresence(c *gin.Context) {
 }
 
 func (app *App) checkMissingBlob(c *gin.Context) {
-	mhs := messages.MissingHashes{}
-
-	// TODO
-
-	c.JSON(http.StatusOK, mhs)
+	hashes, err := app.blobStorer.MissingBlobs(userID(c))
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, messages.MissingHashes{Hashes: hashes})
 }
 
 func (app *App) blobStorageRead(c *gin.Context) {

@@ -390,6 +390,48 @@ func (t *HashTree) Mirror(r RemoteStorage) (changed bool, err error) {
 	return true, nil
 }
 
+// MissingBlobs lists the blobs the current root references, directly or through a
+// document index, that exists reports as not stored
+func MissingBlobs(r RemoteStorage, exists func(hash string) bool) ([]string, error) {
+	missing := []string{}
+	rootHash, _, err := r.GetRootIndex()
+	if err != nil || rootHash == "" {
+		return missing, err
+	}
+	if !exists(rootHash) {
+		return append(missing, rootHash), nil
+	}
+	readIndex := func(hash string) ([]*HashEntry, error) {
+		rdr, err := r.GetReader(hash)
+		if err != nil {
+			return nil, err
+		}
+		defer rdr.Close()
+		return parseIndex(rdr)
+	}
+
+	docs, err := readIndex(rootHash)
+	if err != nil {
+		return nil, err
+	}
+	for _, doc := range docs {
+		if !exists(doc.Hash) {
+			missing = append(missing, doc.Hash)
+			continue
+		}
+		files, err := readIndex(doc.Hash)
+		if err != nil {
+			return nil, err
+		}
+		for _, f := range files {
+			if !exists(f.Hash) {
+				missing = append(missing, f.Hash)
+			}
+		}
+	}
+	return missing, nil
+}
+
 // BuildTree from remote storage
 func BuildTree(provider RemoteStorage) (*HashTree, error) {
 	rootHash, gen, err := provider.GetRootIndex()

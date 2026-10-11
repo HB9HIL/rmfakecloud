@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixes
 - Text highlights in PDFs and EPUBs (firmware 3.x) show up in the PDF export (by @HB9HIL)
 - The document viewer no longer draws a white box wider than the page (by @HB9HIL)
+- `GET /sync/v3/missing` lists the blobs the current root references but the server doesn't have, instead of always an empty list (by @HB9HIL)
 
 ## [0.3.2] - 2026-10-11
 

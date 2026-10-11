@@ -189,6 +189,51 @@ func TestSyncCheckFiles(t *testing.T) {
 	}
 }
 
+func TestSyncMissing(t *testing.T) {
+	tb := newTablet(t)
+	missing := func() []string {
+		t.Helper()
+		var res messages.MissingHashes
+		if status := tb.json(http.MethodGet, "/sync/v3/missing", nil, &res); status != http.StatusOK {
+			t.Fatalf("missing: status %d", status)
+		}
+		return res.Hashes
+	}
+	put := func(content string) string {
+		t.Helper()
+		h := hash(content)
+		if status, _ := tb.do(http.MethodPut, "/sync/v3/files/"+h, []byte(content)); status != http.StatusOK {
+			t.Fatalf("write blob: status %d", status)
+		}
+		return h
+	}
+
+	if got := missing(); len(got) != 0 {
+		t.Fatalf("new account: %v", got)
+	}
+
+	// root -> document index -> file, the document index isn't uploaded yet
+	file := hash("file")
+	docIndex := "3\n" + file + ":0:doc.content:0:4\n"
+	root := put("3\n" + hash(docIndex) + ":80000000:doc:1:4\n")
+	if status := tb.json(http.MethodPut, "/sync/v3/root", messages.SyncRootV3Request{Hash: root}, nil); status != http.StatusOK {
+		t.Fatalf("root: status %d", status)
+	}
+	if got := missing(); len(got) != 1 || got[0] != hash(docIndex) {
+		t.Errorf("missing %v, want the document index", got)
+	}
+
+	put(docIndex)
+	if got := missing(); len(got) != 1 || got[0] != file {
+		t.Errorf("missing %v, want the file", got)
+	}
+
+	put("file")
+	if got := missing(); len(got) != 0 {
+		t.Errorf("missing %v, want none", got)
+	}
+}
+
 // the generation is derived from the history size, only sha256 hex roots keep it counting
 func TestSyncRootRejectsInvalidHash(t *testing.T) {
 	tb := newTablet(t)

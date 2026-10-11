@@ -47,6 +47,11 @@ func (fs *FileSystemStorage) BlobExists(uid, blobid string) bool {
 	return err == nil && !fi.IsDir()
 }
 
+// MissingBlobs lists the blobs referenced from the current root that aren't stored
+func (fs *FileSystemStorage) MissingBlobs(uid string) ([]string, error) {
+	return models.MissingBlobs(fs.BlobStorage(uid), func(h string) bool { return fs.BlobExists(uid, h) })
+}
+
 // lockHistory waits for the root lock, concurrent root requests failed with
 // fslock.ErrLockHeld before
 func lockHistory(historyPath string) (fslock.Handle, error) {
