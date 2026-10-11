@@ -70,7 +70,7 @@ func requestLoggerMiddleware() gin.HandlerFunc {
 			var str bytes.Buffer
 			for k, v := range c.Request.Header {
 				var ln string
-				if k != "Authorization" {
+				if k != "Authorization" && k != "Cookie" {
 					ln = fmt.Sprintf("%s\t%s\n", k, v)
 				} else {
 					ln = fmt.Sprintf("%s\t\n", k)

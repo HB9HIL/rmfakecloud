@@ -33,7 +33,7 @@ func decodeName(n string) (string, error) {
 
 // newWebDav new webdav integration
 func newWebDav(in model.IntegrationConfig) *WebDavIntegration {
-	logrus.Tracef("new client, address: %s, user: %s pass: %s, insecure: %t ", in.Address, in.Username, in.Password, in.Insecure)
+	logrus.Tracef("new client, address: %s, user: %s, insecure: %t ", in.Address, in.Username, in.Insecure)
 	c := gowebdav.NewClient(in.Address, in.Username, in.Password)
 
 	if in.Insecure {
