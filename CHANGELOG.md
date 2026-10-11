@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-11
+
 #### Features
 - The web UI shows the server version in the footer when logged in (by @HB9HIL)
 
