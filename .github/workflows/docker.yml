@@ -3,6 +3,7 @@ name: Docker image
 # Push to master: image tagged with its git describe and bleeding_edge.
 # Tag push vX.Y.Z: image X.Y.Z and latest.
 # Manual run: image tagged with the git describe of the selected branch.
+# All platforms on one runner: the Dockerfile cross-compiles, no emulation.
 on:
   workflow_call:
 
@@ -11,55 +12,6 @@ env:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        include:
-          - { platform: linux/amd64, runner: ubuntu-latest }
-          - { platform: linux/arm64, runner: ubuntu-24.04-arm }
-          - { platform: linux/arm/v7, runner: ubuntu-24.04-arm }
-    runs-on: ${{ matrix.runner }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - id: version
-        run: |
-          echo "version=$(git describe --tags --always | sed 's/^v//')" >> "$GITHUB_OUTPUT"
-          platform=${{ matrix.platform }}
-          echo "pair=${platform//\//-}" >> "$GITHUB_OUTPUT"
-      - id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.IMAGE }}
-      - uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@v4
-        if: matrix.platform == 'linux/arm/v7'
-      - uses: docker/setup-buildx-action@v4
-      - id: build
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: ${{ matrix.platform }}
-          build-args: VERSION=${{ steps.version.outputs.version }}
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
-      - run: |
-          mkdir -p "${{ runner.temp }}/digests"
-          digest="${{ steps.build.outputs.digest }}"
-          touch "${{ runner.temp }}/digests/${digest#sha256:}"
-      - uses: actions/upload-artifact@v7
-        with:
-          name: digests-${{ steps.version.outputs.pair }}
-          path: ${{ runner.temp }}/digests/*
-          if-no-files-found: error
-          retention-days: 1
-
-  merge:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -67,11 +19,6 @@ jobs:
           fetch-depth: 0
       - id: version
         run: echo "version=$(git describe --tags --always | sed 's/^v//')" >> "$GITHUB_OUTPUT"
-      - uses: actions/download-artifact@v8
-        with:
-          path: ${{ runner.temp }}/digests
-          pattern: digests-*
-          merge-multiple: true
       - id: meta
         uses: docker/metadata-action@v6
         with:
@@ -88,8 +35,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-buildx-action@v4
-      - working-directory: ${{ runner.temp }}/digests
-        run: |
-          docker buildx imagetools create \
-            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.IMAGE }}@sha256:%s ' *)
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          build-args: VERSION=${{ steps.version.outputs.version }}
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          push: true

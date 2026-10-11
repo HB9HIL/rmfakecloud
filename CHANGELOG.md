@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Chore
+- The Docker image cross-compiles the Go binary for arm instead of building under QEMU, all platforms build in one job (by @HB9HIL)
+
 #### Fixes
 - Text highlights in PDFs and EPUBs (firmware 3.x) show up in the PDF export (by @HB9HIL)
 - The document viewer no longer draws a white box wider than the page (by @HB9HIL)
