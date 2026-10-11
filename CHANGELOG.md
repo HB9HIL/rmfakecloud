@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Chore
+- CI no longer cancels a running build on master when a new commit is pushed, so the `bleeding_edge` image always gets finished (by @HB9HIL)
+
 ## [0.3.3] - 2026-10-11
 
 #### Chore
