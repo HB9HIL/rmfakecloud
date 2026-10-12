@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Chore
+- Dependabot checks Go, npm, GitHub Actions and Docker dependencies daily (by @HB9HIL)
+
 ## [0.6.0] - 2026-10-12
 
 #### Features
