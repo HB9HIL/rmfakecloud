@@ -30,7 +30,7 @@ module.exports = defineConfig({
     baseUrl: "http://localhost:3002",
     video: false,
     setupNodeEvents(on) {
-      on("task", { totp });
+      on("task", { totp, log: (m) => (console.log(m), null) });
     },
   },
 });

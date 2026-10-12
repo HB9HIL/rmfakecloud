@@ -4,16 +4,28 @@ import { Document, Page, pdfjs } from "react-pdf";
 
 import { documentUrl } from "../../api";
 import { buttonClass } from "../../components/styles";
-import { Alert, Button, Spinner } from "../../components/ui";
+import { Alert, Button } from "../../components/ui";
+import { formatBytes } from "../../format";
 import type { Doc, Entry } from "../../types";
 import Breadcrumb from "./Breadcrumb";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
 
+// the export is streamed without a length, so this counts up instead of a percentage
+function Loading({ loaded }: { loaded: number }) {
+  return (
+    <div role="status" className="flex flex-col items-center gap-2 p-6 text-sm text-muted">
+      <progress className="h-1.5 w-48 accent-ink" aria-label="Loading the document" />
+      {loaded > 0 ? `${formatBytes(loaded)} loaded` : "Loading…"}
+    </div>
+  );
+}
+
 // documents of every type are rendered as the exported PDF
 export default function FileView({ file, path }: { file: Doc; path: Entry[] }) {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(0);
+  const [loaded, setLoaded] = useState(0);
   const [height, setHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -53,7 +65,8 @@ export default function FileView({ file, path }: { file: Doc; path: Entry[] }) {
           suspense={false}
           file={documentUrl(file.id)}
           onLoadSuccess={(pdf) => setPages(pdf.numPages)}
-          loading={<Spinner />}
+          onLoadProgress={(p) => setLoaded(p.loaded)}
+          loading={<Loading loaded={loaded} />}
           error={<Alert>Failed to load the document.</Alert>}
         >
           {height > 0 && <Page suspense={false} pageNumber={page} height={height} renderAnnotationLayer={false} renderTextLayer={false} />}
