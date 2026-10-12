@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Features
+- The document viewer has a table of contents, search, text selection and printing (by @HB9HIL)
+
 ## [0.5.0] - 2026-10-12
 
 #### Features
