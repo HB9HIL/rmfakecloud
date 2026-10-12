@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ddvk/rmfakecloud/internal/app/hub"
 	"github.com/ddvk/rmfakecloud/internal/app/passcodestore"
 	"github.com/ddvk/rmfakecloud/internal/messages"
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,7 @@ func (app *App) passcodeReset(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	app.hub.Publish(userID(c), hub.EventPasscode)
 	log.Infof("%screated reset request %s for device %s", passcodeLog, requestID, claims.DeviceID)
 	c.Status(http.StatusCreated)
 }

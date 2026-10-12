@@ -54,6 +54,7 @@ func (app *ReactAppWrapper) RegisterRoutes(router *gin.Engine) {
 		app.h.NotifySync(uid, br)
 	})
 
+	auth.GET("events", app.events)
 	auth.GET("newcode", app.newCode)
 	auth.GET("version", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"version": app.cfg.Version})

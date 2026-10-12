@@ -27,6 +27,7 @@ type Hub struct {
 	additions     chan *wsClient
 	removals      chan *wsClient
 	notifications chan notification
+	browsers      browsers
 }
 
 // DocumentNotification notification of something
@@ -59,6 +60,7 @@ func (h *Hub) NotifySync(uid, deviceID string) string {
 		from: deviceID,
 		msg:  &msg,
 	}
+	h.Publish(uid, EventDocuments)
 	return msgid
 }
 
@@ -94,6 +96,7 @@ func (h *Hub) Notify(uid, deviceID string, doc DocumentNotification, eventType m
 		from: deviceID,
 		msg:  &msg,
 	}
+	h.Publish(uid, EventDocuments)
 }
 func (h *Hub) NotifyPasscodeReset(uid, deviceID, deviceName, requestID string) {
 	msgid := strconv.Itoa(int(time.Now().UnixNano()))
@@ -115,6 +118,7 @@ func (h *Hub) NotifyPasscodeReset(uid, deviceID, deviceName, requestID string) {
 		uid: uid,
 		msg: &msg,
 	}
+	h.Publish(uid, EventPasscode)
 }
 
 func (h *Hub) NotifyScreenshare(uid, fromClientID string, payload interface{}) {
@@ -188,6 +192,7 @@ func NewHub() *Hub {
 		additions:     make(chan *wsClient),
 		removals:      make(chan *wsClient),
 		notifications: make(chan notification, 5),
+		browsers:      browsers{subs: make(map[string]map[chan string]struct{})},
 	}
 	go h.start()
 	return &h

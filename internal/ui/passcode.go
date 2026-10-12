@@ -3,6 +3,7 @@ package ui
 import (
 	"net/http"
 
+	"github.com/ddvk/rmfakecloud/internal/app/hub"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,6 +27,7 @@ func (app *ReactAppWrapper) dismissPasscodeReset(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
+	app.h.Publish(uid, hub.EventPasscode)
 	log.Infof("%sdismissed reset request %s", passcodeLog, requestID)
 	c.Status(http.StatusOK)
 }

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { approvePasscodeReset, dismissPasscodeReset, listPasscodeResets } from "../api";
+import { useServerEvent } from "../events";
 import { formatDate } from "../format";
 import type { PasscodeReset } from "../types";
 import { Alert, Button } from "./ui";
 
-// passcode (PIN) reset requests from the tablet, polled while logged in
+// passcode (PIN) reset requests from the tablet, shown while logged in
 export default function PasscodeResets() {
   const [resets, setResets] = useState<PasscodeReset[]>([]);
   const [error, setError] = useState("");
@@ -19,11 +20,10 @@ export default function PasscodeResets() {
       .catch((e: Error) => setError(e.message));
   }, []);
 
-  useEffect(() => {
-    load();
-    const id = setInterval(load, 5000);
-    return () => clearInterval(id);
-  }, [load]);
+  useEffect(load, [load]);
+  // pushed by the server when the tablet asks or a request is handled
+  useServerEvent("passcode", load);
+  useServerEvent("open", load);
 
   const act = (request: Promise<unknown>) => request.then(load).catch((e: Error) => setError(e.message));
 

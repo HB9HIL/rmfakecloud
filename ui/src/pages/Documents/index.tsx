@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { Link, useLoaderData, useNavigate, useParams } from "react-router";
+import { Link, useLoaderData, useNavigate, useParams, useRevalidator } from "react-router";
 import { BsFolder2Open, BsSearch, BsXLg } from "react-icons/bs";
 
 import type { listDocuments } from "../../api";
 import { inputClass } from "../../components/styles";
 import { Alert, Button, Dialog } from "../../components/ui";
+import { useServerEvent } from "../../events";
 import type { Entry, Folder } from "../../types";
 import { FileManagerContext, useFileManager, type FileManager } from "./actions";
 import ContextMenu from "./ContextMenu";
@@ -81,6 +82,10 @@ export default function Documents() {
   );
   const { byId, parentOf } = useMemo(() => indexTree(entries), [entries]);
   const files = useFileManager(byId, parentOf);
+  // the tablet synced or another tab changed something
+  const { revalidate } = useRevalidator();
+  useServerEvent("documents", revalidate);
+  useServerEvent("open", revalidate);
 
   const selected = byId.get(itemId);
   const path: Entry[] = [];
