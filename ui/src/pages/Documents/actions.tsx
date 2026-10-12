@@ -21,6 +21,9 @@ import { accepted, rejected, uploadInBatches } from "./upload";
 
 export const modKey = /Mac|iPhone|iPad/.test(navigator.userAgent) ? "⌘" : "Ctrl";
 
+// installed on an iOS home screen, where a download strands the app (WebKit bug 290847)
+export const iosApp = "standalone" in navigator && navigator.standalone === true;
+
 const mime = "application/x-rmfakecloud-ids";
 // what is being dragged, dragover can't read the data transfer
 let dragging: string[] = [];
@@ -167,7 +170,7 @@ export function useFileManager(byId: Map<string, Entry>, parentOf: Map<string, s
     const one = ids.length === 1 ? byId.get(ids[0]) : undefined;
     return [
       ...(one ? [{ label: "Open", icon: BsBoxArrowUpRight, shortcut: "Enter", onSelect: () => navigate(docPath(one.id)) }] : []),
-      ...(one && !one.isFolder
+      ...(one && !one.isFolder && !iosApp
         ? [
             { label: "Download PDF", icon: BsDownload, onSelect: () => download(documentUrl(one.id), `${one.name}.pdf`) },
             { label: "Download .rmdoc", icon: BsDownload, onSelect: () => download(documentUrl(one.id, "rmdoc"), `${one.name}.rmdoc`) },

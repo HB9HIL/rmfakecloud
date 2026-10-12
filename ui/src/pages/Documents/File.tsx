@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type SubmitEvent } from "react";
-import { BsChevronDown, BsChevronLeft, BsChevronRight, BsChevronUp, BsDownload, BsListNested, BsPrinter, BsSearch } from "react-icons/bs";
+import { BsChevronDown, BsChevronLeft, BsChevronRight, BsChevronUp, BsDownload, BsListNested, BsPrinter, BsSearch, BsShare } from "react-icons/bs";
 import { Document, Outline, Page, pdfjs } from "react-pdf";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -10,9 +10,10 @@ import { buttonClass } from "../../components/styles";
 import { Alert, Button } from "../../components/ui";
 import { formatBytes } from "../../format";
 import type { Doc, Entry } from "../../types";
+import { iosApp } from "./actions";
 import Breadcrumb from "./Breadcrumb";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/legacy/build/pdf.worker.min.mjs", import.meta.url).toString();
 
 // the export is streamed without a length, so this counts up instead of a percentage
 function Loading({ loaded }: { loaded: number }) {
@@ -47,6 +48,13 @@ async function print(pdf: PDFDocumentProxy) {
   frame.src = URL.createObjectURL(new Blob([data as Uint8Array<ArrayBuffer>], { type: "application/pdf" }));
   frame.onload = () => frame.contentWindow?.print();
   document.body.append(frame);
+}
+
+// the share sheet saves to Files, opens in Books and the like
+async function share(pdf: PDFDocumentProxy, name: string) {
+  const data = await pdf.getData();
+  const file = new File([data as Uint8Array<ArrayBuffer>], `${name}.pdf`, { type: "application/pdf" });
+  await navigator.share({ files: [file] }).catch(() => {});
 }
 
 type Search = { term: string; matches: number[]; searched: number };
@@ -192,12 +200,22 @@ export default function FileView({ file, path }: { file: Doc; path: Entry[] }) {
             <BsPrinter aria-hidden /> Print
           </Button>
         )}
-        <a className={buttonClass("secondary", "sm")} href={documentUrl(file.id)} download={`${file.name}.pdf`}>
-          <BsDownload aria-hidden /> PDF
-        </a>
-        <a className={buttonClass("secondary", "sm")} href={documentUrl(file.id, "rmdoc")} download={`${file.name}.rmdoc`}>
-          <BsDownload aria-hidden /> .rmdoc
-        </a>
+        {iosApp ? (
+          pdf && (
+            <Button size="sm" onClick={() => share(pdf, file.name)}>
+              <BsShare aria-hidden /> Share
+            </Button>
+          )
+        ) : (
+          <>
+            <a className={buttonClass("secondary", "sm")} href={documentUrl(file.id)} download={`${file.name}.pdf`}>
+              <BsDownload aria-hidden /> PDF
+            </a>
+            <a className={buttonClass("secondary", "sm")} href={documentUrl(file.id, "rmdoc")} download={`${file.name}.rmdoc`}>
+              <BsDownload aria-hidden /> .rmdoc
+            </a>
+          </>
+        )}
       </div>
 
       <div ref={ref} className="min-h-0 flex-1 py-6">

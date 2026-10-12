@@ -17,7 +17,9 @@ export class ApiError extends Error {
 }
 
 async function request<T = unknown>(path: string, init?: RequestInit): Promise<T> {
-  const r = await fetch(`${root}/${path}`, init);
+  const r = await fetch(`${root}/${path}`, init).catch(() => {
+    throw new ApiError(0, "The server can't be reached", null);
+  });
   const isJson = r.headers.get("Content-Type")?.startsWith("application/json");
   if (!r.ok) {
     const body: unknown = isJson ? await r.json().catch(() => null) : await r.text();

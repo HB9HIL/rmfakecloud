@@ -28,7 +28,7 @@ function Node({ node, style }: NodeRendererProps<Entry>) {
         ev.preventDefault();
         files.showMenu(ev.clientX, ev.clientY, top ? files.folderMenu(e.id) : files.itemMenu([e.id]));
       }}
-      className={`flex h-full items-center gap-2 rounded px-2 text-sm data-over:bg-accent/15 data-over:outline-2 data-over:outline-accent ${
+      className={`flex h-full items-center gap-2 rounded px-2 text-sm select-none data-over:bg-accent/15 data-over:outline-2 data-over:outline-accent ${
         node.isSelected ? "bg-line/70 font-medium" : "hover:bg-line/40"
       } ${files.clipboard.includes(e.id) ? "opacity-50" : ""}`}
     >

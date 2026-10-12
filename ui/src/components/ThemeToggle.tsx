@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BsCircleHalf, BsMoon, BsSun } from "react-icons/bs";
 
 import { Button } from "./ui";
@@ -13,8 +13,17 @@ function current(): Theme {
   return t === "light" || t === "dark" ? t : "system";
 }
 
+// the browser bar and status bar follow a chosen theme too, index.html sets them by the system's
+const paper = { light: "#f6f4ef", dark: "#161513" };
+
 export default function ThemeToggle() {
   const [theme, setTheme] = useState(current);
+
+  useEffect(() => {
+    for (const m of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+      m.content = paper[theme === "system" ? (m.media.includes("dark") ? "dark" : "light") : theme];
+    }
+  }, [theme]);
 
   function next() {
     const t = themes[(themes.indexOf(theme) + 1) % themes.length];

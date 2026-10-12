@@ -8,16 +8,32 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// files of ui/public, served from the root
+var rootFiles = []string{
+	"favicon.ico",
+	"robots.txt",
+	"manifest.json",
+	"sw.js",
+	"icon-192.png",
+	"icon-512.png",
+}
+
+func cacheControl(value string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Cache-Control", value)
+	}
+}
+
 // RegisterRoutes the apps routes
 func (app *ReactAppWrapper) RegisterRoutes(router *gin.Engine) {
-	router.StaticFS(app.prefix, app)
+	// the build hashes the asset names
+	router.Group(app.prefix, cacheControl("public, max-age=31536000, immutable")).StaticFS("/", app)
 
-	router.GET("/favicon.ico", func(c *gin.Context) {
-		c.FileFromFS("/favicon.ico", app.fs)
-	})
-	router.GET("/robots.txt", func(c *gin.Context) {
-		c.FileFromFS("/robots.txt", app.fs)
-	})
+	for _, f := range rootFiles {
+		router.GET("/"+f, cacheControl("no-cache"), func(c *gin.Context) {
+			c.FileFromFS("/"+f, app.fs)
+		})
+	}
 
 	//hack for index.html
 	router.NoRoute(func(c *gin.Context) {
@@ -25,12 +41,16 @@ func (app *ReactAppWrapper) RegisterRoutes(router *gin.Engine) {
 		log.Info(uri)
 		if strings.HasPrefix(uri, "/api") ||
 			strings.HasPrefix(uri, "/ui/api") ||
+			strings.HasPrefix(uri, app.prefix) ||
 			c.Request.Method != http.MethodGet {
 
+			// a missing asset may come back with a rollback
+			c.Writer.Header().Del("Cache-Control")
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
 
+		c.Header("Cache-Control", "no-cache")
 		c.FileFromFS(indexReplacement, app)
 	})
 

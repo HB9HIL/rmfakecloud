@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link, useLoaderData, useNavigate, useParams, useRevalidator } from "react-router";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { Link, useLoaderData, useNavigate, useParams, useRevalidator, useSearchParams } from "react-router";
 import { BsFolder2Open, BsSearch, BsXLg } from "react-icons/bs";
 
 import type { listDocuments } from "../../api";
@@ -15,6 +15,7 @@ import FileIcon from "./FileIcon";
 import FolderView from "./Folder";
 import { docPath } from "./path";
 import DocumentTree from "./Tree";
+import { takeShared } from "./upload";
 
 function indexTree(entries: Entry[]) {
   const byId = new Map<string, Entry>();
@@ -86,6 +87,17 @@ export default function Documents() {
   const { revalidate } = useRevalidator();
   useServerEvent("documents", revalidate);
   useServerEvent("open", revalidate);
+
+  // files shared from another app land in My Files
+  const [params] = useSearchParams();
+  const onShare = useEffectEvent(async () => {
+    navigate("/documents", { replace: true });
+    const shared = await takeShared();
+    if (shared.length) await files.upload(shared, "root");
+  });
+  useEffect(() => {
+    if (params.has("share")) onShare();
+  }, [params]);
 
   const selected = byId.get(itemId);
   const path: Entry[] = [];

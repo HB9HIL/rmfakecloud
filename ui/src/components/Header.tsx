@@ -26,7 +26,7 @@ export default function Header() {
   const close = () => setOpen(false);
 
   return (
-    <header className="relative border-b border-line">
+    <header className="relative border-b border-line select-none">
       <div className="flex h-14 items-center gap-6 px-4">
         <Link to="/documents" className="font-serif text-xl tracking-tight">rmfakecloud</Link>
 

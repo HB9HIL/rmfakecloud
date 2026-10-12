@@ -5,6 +5,13 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // pdf.js with polyfills, the modern build needs Safari 26.2 (Map.getOrInsertComputed)
+  resolve: {
+    alias: [
+      { find: /^pdfjs-dist$/, replacement: "pdfjs-dist/legacy/build/pdf.mjs" },
+      { find: /^pdfjs-dist\/web\//, replacement: "pdfjs-dist/legacy/web/" },
+    ],
+  },
   build: {
     rolldownOptions: {
       output: {

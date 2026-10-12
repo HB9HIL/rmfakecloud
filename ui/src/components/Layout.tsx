@@ -1,4 +1,4 @@
-import { isRouteErrorResponse, Link, Navigate, Outlet, useRouteError } from "react-router";
+import { isRouteErrorResponse, Link, Navigate, Outlet, useRevalidator, useRouteError } from "react-router";
 import { ToastContainer } from "react-toastify";
 
 import { ApiError } from "../api";
@@ -6,7 +6,7 @@ import { useUser } from "../auth";
 import Footer from "./Footer";
 import Header from "./Header";
 import PasscodeResets from "./PasscodeResets";
-import { Alert } from "./ui";
+import { Alert, Button } from "./ui";
 
 // the header stays on top, every page scrolls below it
 const mainClass = "app-main min-h-0 flex-1 overflow-auto";
@@ -40,6 +40,7 @@ export function Protected() {
 
 export function RouteError() {
   const error = useRouteError();
+  const { revalidate, state } = useRevalidator();
   if (error instanceof ApiError && error.status === 401) return <Navigate to="/login" replace />;
   const message =
     isRouteErrorResponse(error) ? `${error.status} ${error.statusText}`
@@ -48,6 +49,8 @@ export function RouteError() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <Alert>An error occurred: {message}</Alert>
+      {/* an installed app has no reload button */}
+      <Button disabled={state === "loading"} onClick={() => revalidate()}>Retry</Button>
     </div>
   );
 }

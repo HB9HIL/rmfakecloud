@@ -159,7 +159,7 @@ export default function FileList({ view, entries, selected, onSelect, onOpen, on
     },
     ...(files.renaming === e.id ? {} : files.dragSource(() => (selected.includes(e.id) ? selected : [e.id]))),
     ...(e.isFolder ? files.dropTarget(e.id) : {}),
-    className: `group cursor-default outline-offset-[-2px] aria-selected:bg-line/70 data-over:bg-accent/15 data-over:outline-2 data-over:outline-accent ${
+    className: `group cursor-default select-none outline-offset-[-2px] aria-selected:bg-line/70 data-over:bg-accent/15 data-over:outline-2 data-over:outline-accent ${
       files.clipboard.includes(e.id) ? "opacity-50" : ""
     } ${className}`,
   });

@@ -15,6 +15,7 @@ The configuration is made through environment variables.
 | `RM_LOGFILE`      | Additionally write the log to this file |
 | `OPEN_REGISTRATION` | Allow creating users via `POST /ui/api/register`, only from localhost (default: false) |
 | `RM_HTTPS_COOKIE` | For the UI, force cookies to be available only via https |
+| `RM_SESSION_TTL`  | How long a login to the web UI lasts, e.g. `720h` for 30 days when it's installed as an app (default: `24h`). Changing the password ends all logins |
 | `RM_TRUST_PROXY`  | Take the client ip address from X-Forwarded-For/X-Real-IP set by a reverse proxy. `1` trusts proxies on loopback and private networks, or set a comma separated list of proxy IPs/CIDRs, e.g. `203.0.113.10,2001:db8::/64` (default: off) |
 | `HASH_SCHEMA_VERSION` | Hash tree schema version: "3" or "4" (default: 3) |
 

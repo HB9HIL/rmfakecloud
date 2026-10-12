@@ -38,6 +38,12 @@ export default function Help() {
         an ICS calendar available on the tablet.
       </p>
 
+      <h2>As an app</h2>
+      <ul>
+        <li>Android: install it from the Chrome menu (Install app or Add to Home screen). Then you can share PDFs and EPUBs from other apps to rmfakecloud.</li>
+        <li>iPhone and iPad: in Safari, tap Share, then Add to Home Screen. Documents are saved with Share instead of downloads.</li>
+      </ul>
+
       <h2>Account</h2>
       <p>
         Change your password and turn on two-factor login in your <Link to="/profile">profile</Link>.

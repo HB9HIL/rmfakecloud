@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Features
 - The document viewer has a table of contents, search, text selection and printing (by @HB9HIL)
+- The web UI installs as an app on phones and tablets, on Android files can be shared to it (by @HB9HIL)
+- `RM_SESSION_TTL` sets how long a web UI login lasts (by @HB9HIL)
+
+#### Fixes
+- The document viewer works on iOS before 26.2 and Samsung Internet (by @HB9HIL)
+- A new version no longer loads assets of the old one from the browser cache (by @HB9HIL)
 
 ## [0.5.0] - 2026-10-12
 

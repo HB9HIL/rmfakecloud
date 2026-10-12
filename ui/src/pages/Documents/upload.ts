@@ -29,3 +29,16 @@ export async function uploadInBatches(files: File[], folderId: string) {
     }
   }
 }
+
+// files shared to the installed app (public/sw.js), each one is taken once
+export async function takeShared() {
+  const cache = await caches.open("share");
+  const files: File[] = [];
+  for (const req of await cache.keys()) {
+    const blob = await (await cache.match(req))?.blob();
+    if (blob && (await cache.delete(req))) {
+      files.push(new File([blob], decodeURIComponent(req.url.split("/").pop()!), { type: blob.type }));
+    }
+  }
+  return files;
+}

@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ddvk/rmfakecloud/internal/email"
 	log "github.com/sirupsen/logrus"
@@ -77,6 +78,7 @@ const (
 	// EnvLogFile log file to use
 	EnvLogFile     = "RM_LOGFILE"
 	envHTTPSCookie = "RM_HTTPS_COOKIE"
+	envSessionTTL  = "RM_SESSION_TTL"
 	envTrustProxy  = "RM_TRUST_PROXY"
 
 	envMQTTPort          = "MQTT_PORT"
@@ -103,6 +105,7 @@ type Config struct {
 	HWRLangOverride   string
 	HWRHost           string
 	HTTPSCookie       bool
+	SessionTTL        time.Duration
 	TrustedProxies    []string
 	MQTTPort          string
 	ICEServers        []interface{}
@@ -189,6 +192,14 @@ func FromEnv() *Config {
 	}
 	openRegistration, _ := strconv.ParseBool(os.Getenv(envRegistrationOpen))
 	httpsCookie, _ := strconv.ParseBool(os.Getenv(envHTTPSCookie))
+
+	sessionTTL := 24 * time.Hour
+	if v := os.Getenv(envSessionTTL); v != "" {
+		sessionTTL, err = time.ParseDuration(v)
+		if err != nil || sessionTTL <= 0 {
+			log.Fatalf("%s '%s' is not a duration like 720h", envSessionTTL, v)
+		}
+	}
 
 	cloudHost := DefaultHost
 	uploadURL := os.Getenv(EnvStorageURL)
@@ -282,6 +293,7 @@ func FromEnv() *Config {
 		HWRLangOverride:   os.Getenv(envHwrLangOverride),
 		HWRHost:           os.Getenv(envHwrHost),
 		HTTPSCookie:       httpsCookie,
+		SessionTTL:        sessionTTL,
 		TrustedProxies:    trustedProxies,
 		MQTTPort:          mqttPort,
 		ICEServers:        iceServers,
@@ -400,6 +412,7 @@ General:
 	%s		Path to the server certificate key.
 	%s	Write logs to file
 	%s Send auth cookie only via https
+	%s	Web UI login lifetime (default: 24h)
 	%s	Trust X-Forwarded-For/X-Real-IP from these proxies: 1 for loopback and private networks, or a comma separated list of IPs/CIDRs
 	%s	Hash tree schema version: "3" or "4" (default: 3)
 
@@ -437,6 +450,7 @@ myScript hwr (needs a developer account):
 		envTLSKey,
 		EnvLogFile,
 		envHTTPSCookie,
+		envSessionTTL,
 		envTrustProxy,
 		envHashSchemaVersion,
 

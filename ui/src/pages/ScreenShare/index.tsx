@@ -73,6 +73,21 @@ export default function ScreenShare() {
   const optionsRef = useRef<HTMLDivElement>(null);
   const vpAspect = useSyncExternalStore(subscribeResize, viewportAspect);
 
+  // the screen stays on while streaming, hiding the page releases the lock
+  useEffect(() => {
+    if (status !== "streaming") return;
+    let lock: WakeLockSentinel | undefined;
+    const request = () => {
+      if (document.visibilityState === "visible") navigator.wakeLock?.request("screen").then((l) => (lock = l), () => {});
+    };
+    request();
+    document.addEventListener("visibilitychange", request);
+    return () => {
+      document.removeEventListener("visibilitychange", request);
+      lock?.release();
+    };
+  }, [status]);
+
   useEffect(() => {
     if (!showOptions) return;
     const close = (e: MouseEvent) => {
