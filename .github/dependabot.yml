@@ -29,6 +29,9 @@ updates:
     directories: [/, /docker]
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: golang
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
       docker:
         patterns: ["*"]
