@@ -24,3 +24,6 @@ assets_vfsdata.go
 
 # mkdoc build
 site/
+
+# other stuff
+/tmp
