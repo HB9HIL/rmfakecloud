@@ -17,6 +17,14 @@ jobs:
       - run: go vet ./...
       - run: go test -race ./...
 
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: helm lint --strict helm
+      - run: >-
+          helm lint --strict helm --set ocr.enabled=true,ingress.enabled=true,ingress.host=rm.example.com,ingress.tlsSecretName=rm-tls,strategy.type=RollingUpdate,existingSecret=rm,persistence.enabled=false
+
   ui:
     runs-on: ubuntu-latest
     defaults:

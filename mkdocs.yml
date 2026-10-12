@@ -20,6 +20,7 @@ nav:
   - Cloud Setup:
       - From Source: install/source.md
       - With Docker: install/docker.md
+      - With Helm: install/helm.md
       - Configuration: install/configuration.md
       - Reverse Proxy:
           - Apache: install/reverse-proxy/apache.md

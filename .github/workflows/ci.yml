@@ -2,7 +2,7 @@ name: CI
 
 # Pull request: tests and CodeQL.
 # Push to master: additionally the image (git describe + bleeding_edge) and the docs.
-# Tag vX.Y.Z: additionally the image (X.Y.Z + latest) and the GitHub release with binaries.
+# Tag vX.Y.Z: additionally the image (X.Y.Z + latest), the GitHub release with binaries and the Helm chart.
 # Manual run: image tagged with the git describe of the selected branch.
 on:
   push:
@@ -56,6 +56,15 @@ jobs:
     uses: ./.github/workflows/release.yml
     permissions:
       contents: write
+
+  # after the images it points to
+  chart:
+    needs: docker
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/chart.yml
+    permissions:
+      contents: read
+      packages: write
 
   docs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'

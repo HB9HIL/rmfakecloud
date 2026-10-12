@@ -1,0 +1,86 @@
+image:
+  repository: ghcr.io/hb9hil/rmfakecloud
+  # default: the chart's appVersion, set it when installing from a checkout
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# settings as environment variables, see https://hb9hil.github.io/rmfakecloud/install/configuration/
+# DATADIR and PORT are set by the chart
+env:
+  # public https URL of the ingress, without port for firmware >= 3.15
+  STORAGE_URL: ""
+  RM_HTTPS_COOKIE: "true"
+  RM_TRUST_PROXY: "true"
+  # LOGLEVEL: info
+  # RM_SMTP_SERVER: smtp.example.com:587
+
+# secret with the sensitive settings, loaded as environment variables:
+# JWT_SECRET_KEY, RM_SMTP_PASSWORD, RMAPI_HWR_APPLICATIONKEY, RMAPI_HWR_HMAC, ICE_SERVERS
+# empty: the chart creates a secret with a random JWT_SECRET_KEY and keeps it on upgrades
+existingSecret: ""
+
+# only one replica: notifications, pairing codes and screenshare live in the process memory
+strategy:
+  # RollingUpdate works without downtime on a ReadWriteMany volume, the sync root is locked with flock
+  type: Recreate
+
+persistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  # cert-manager.io/cluster-issuer: letsencrypt
+  host: ""
+  # tls secret for the host, empty: no tls on the ingress
+  tlsSecretName: ""
+
+# text layer for uploaded scans with ocrmypdf, a container in the same pod (localhost, no service)
+ocr:
+  enabled: false
+  image:
+    repository: ghcr.io/hb9hil/rmfakecloud-ocr
+    # default: image.tag
+    tag: ""
+    pullPolicy: IfNotPresent
+  # tesseract languages joined with +, the image contains deu and eng
+  languages: deu+eng
+  resources: {}
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 512Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+
+# on the deployment, e.g. for keel
+annotations: {}
+podAnnotations: {}
+priorityClassName: ""
+nodeSelector: {}
+tolerations: []
+affinity: {}

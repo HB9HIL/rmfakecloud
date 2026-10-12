@@ -1,0 +1,12 @@
+apiVersion: v2
+name: rmfakecloud
+description: Self-hosted replacement for the reMarkable cloud
+type: application
+# set from the git tag when the chart is published (.github/workflows/chart.yml)
+version: 0.0.0
+appVersion: "0.0.0"
+# preStop sleep action
+kubeVersion: ">=1.30.0-0"
+home: https://hb9hil.github.io/rmfakecloud
+sources:
+  - https://github.com/hb9hil/rmfakecloud

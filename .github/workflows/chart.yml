@@ -1,0 +1,19 @@
+name: Helm chart
+
+# Tag vX.Y.Z: the chart in helm/ as oci://ghcr.io/hb9hil/charts/rmfakecloud, version and appVersion X.Y.Z
+on:
+  workflow_call:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: |
+          version=${GITHUB_REF_NAME#v}
+          helm package helm --version "$version" --app-version "$version"
+          echo "$TOKEN" | helm registry login ghcr.io --username "$ACTOR" --password-stdin
+          helm push "rmfakecloud-$version.tgz" oci://ghcr.io/hb9hil/charts
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
