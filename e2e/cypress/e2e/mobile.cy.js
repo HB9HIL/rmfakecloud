@@ -34,6 +34,24 @@ describe("mobile", () => {
     cy.contains('Moved "test" to Trash');
   });
 
+  it("turns pages with a swipe", () => {
+    cy.visit("/documents");
+    cy.get("input[type=file]").selectFile("cypress/fixtures/text.pdf", { force: true });
+    cy.contains(".filelist-item", "text").dblclick();
+    cy.get(".react-pdf__Page canvas").should("be.visible");
+
+    const swipe = (from, to) =>
+      cy
+        .get(".react-pdf__Page")
+        .parent()
+        .trigger("touchstart", { touches: [{ clientX: from, clientY: 400 }] })
+        .trigger("touchend", { changedTouches: [{ clientX: to, clientY: 410 }] });
+    swipe(300, 100);
+    cy.get("input[aria-label=Page]").should("have.value", "2");
+    swipe(100, 300);
+    cy.get("input[aria-label=Page]").should("have.value", "1");
+  });
+
   it("has no horizontal overflow", () => {
     const pages = [
       ["/help", "h1"],

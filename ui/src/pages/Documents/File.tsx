@@ -71,6 +71,9 @@ export default function FileView({ file, path }: { file: Doc; path: Entry[] }) {
   const [printing, setPrinting] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const searching = useRef<AbortController | null>(null);
+  // where a one-finger touch started and if the page could still scroll sideways,
+  // a horizontal swipe turns the page once it can't
+  const swipe = useRef<{ x: number; y: number; left: boolean; right: boolean } | null>(null);
   const pages = pdf?.numPages ?? 0;
 
   useEffect(() => {
@@ -239,7 +242,33 @@ export default function FileView({ file, path }: { file: Doc; path: Entry[] }) {
               <Outline />
             </nav>
           )}
-          <div className="min-w-0 flex-1 overflow-auto">
+          <div
+            className="min-w-0 flex-1 overflow-auto"
+            onTouchStart={(e) => {
+              const el = e.currentTarget;
+              // pinching or zoomed in: the fingers pan
+              if (e.touches.length > 1 || (window.visualViewport?.scale ?? 1) > 1) {
+                swipe.current = null;
+                return;
+              }
+              swipe.current = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY,
+                left: el.scrollLeft > 0,
+                right: el.scrollLeft + el.clientWidth < el.scrollWidth - 1,
+              };
+            }}
+            onTouchEnd={(e) => {
+              const start = swipe.current;
+              swipe.current = null;
+              if (!start || !window.getSelection()?.isCollapsed) return;
+              const dx = e.changedTouches[0].clientX - start.x;
+              const dy = e.changedTouches[0].clientY - start.y;
+              if (Math.abs(dx) < 50 || Math.abs(dx) < 2 * Math.abs(dy)) return;
+              if (dx < 0 && !start.right && page < pages) setPage(page + 1);
+              if (dx > 0 && !start.left && page > 1) setPage(page - 1);
+            }}
+          >
             {height > 0 && (
               <Page
                 suspense={false}
