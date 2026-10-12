@@ -62,6 +62,10 @@ func FileHashAndSize(file string) ([]byte, int64, error) {
 	return h, size, err
 }
 
+// cacheVersion invalidates cached trees written with wrong derived fields,
+// 1: PayloadType holds the file type, not the document name
+const cacheVersion = 1
+
 // LoadTree loads a cached tree to avoid parsing all the blobs
 func LoadTree(cacheFile string) (*HashTree, error) {
 	tree := HashTree{}
@@ -73,10 +77,16 @@ func LoadTree(cacheFile string) (*HashTree, error) {
 		err = json.Unmarshal(b, &tree)
 		if err != nil {
 			log.Warn("cached tree corrupt, returning empty tree")
-			return &HashTree{}, nil
+			tree = HashTree{}
+		} else if tree.CacheVersion != cacheVersion {
+			// an empty tree mirrors every document from the blobs again
+			log.Info("cached tree outdated, rebuilding: ", cacheFile)
+			tree = HashTree{}
+		} else {
+			log.Info("cached tree loaded: ", cacheFile)
 		}
-		log.Info("cached tree loaded: ", cacheFile)
 	}
+	tree.CacheVersion = cacheVersion
 
 	return &tree, nil
 }
@@ -265,6 +275,7 @@ type HashTree struct {
 	Generation    int64
 	Docs          []*HashDoc
 	SchemaVersion string
+	CacheVersion  int
 }
 
 // FindDoc finds a document by its name

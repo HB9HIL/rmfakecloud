@@ -407,7 +407,7 @@ func (fs *FileSystemStorage) CreateBlobDocument(uid, filename, parent string, st
 	}
 
 	hashDoc := models.NewHashDocWithMeta(docid, metadata)
-	hashDoc.PayloadType = docName
+	hashDoc.PayloadType = strings.TrimPrefix(ext, ".")
 
 	err = hashDoc.AddFile(payloadEntry)
 	if err != nil {
@@ -549,7 +549,6 @@ func (fs *FileSystemStorage) createFromRmDoc(uid, parent string, stream io.Reade
 	}
 
 	hashDoc := models.NewHashDocWithMeta(docid, metadata)
-	hashDoc.PayloadType = metadata.DocumentName
 
 	for _, f := range zr.File {
 		if strings.HasSuffix(f.Name, storage.ContentFileExt) {

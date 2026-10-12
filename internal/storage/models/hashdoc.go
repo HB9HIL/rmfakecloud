@@ -24,7 +24,7 @@ type HashDoc struct {
 
 	//extra fields that are serialized
 	MetadataFile
-	//PayloadType
+	// the fileType of the .content: pdf, epub or notebook
 	PayloadType string
 }
 
@@ -111,7 +111,7 @@ func (t *HashTree) Add(d *HashDoc) error {
 		return errors.New("no files")
 	}
 	if existing, err := t.FindDoc(d.EntryName); err == nil {
-		return &ErrDocumentExists{DocID: existing.EntryName, Name: existing.PayloadType}
+		return &ErrDocumentExists{DocID: existing.EntryName, Name: existing.DocumentName}
 	}
 	t.Docs = append(t.Docs, d)
 	return t.Rehash()

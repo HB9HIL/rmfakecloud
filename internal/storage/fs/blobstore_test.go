@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 	"testing"
 	"time"
 
@@ -74,5 +75,43 @@ func TestBlobURLVerifies(t *testing.T) {
 	parts[0] = "other"
 	if err := VerifyURLParams(parts, q.Get(paramExp), q.Get(paramSignature), fs.Cfg.JWTSecretKey); err == nil {
 		t.Error("url verifies for another user")
+	}
+}
+
+// the tree knows the file type of an upload, also when an older cache stored the name there
+func TestBlobDocumentPayloadType(t *testing.T) {
+	fs := NewStorage(&config.Config{DataDir: t.TempDir()})
+	uid := "test"
+	if err := os.MkdirAll(fs.getUserBlobPath(uid), 0700); err != nil {
+		t.Fatal(err)
+	}
+	doc, err := fs.CreateBlobDocument(uid, "blah.pdf", "", strings.NewReader("dummy"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	payloadType := func() string {
+		tree, err := fs.GetCachedTree(uid)
+		if err != nil {
+			t.Fatal(err)
+		}
+		d, err := tree.FindDoc(doc.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return d.PayloadType
+	}
+	if got := payloadType(); got != "pdf" {
+		t.Errorf("new upload: got %q, want pdf", got)
+	}
+
+	tree, _ := fs.GetCachedTree(uid)
+	d, _ := tree.FindDoc(doc.ID)
+	d.PayloadType = "blah"
+	tree.CacheVersion = 0
+	if err := fs.SaveCachedTree(uid, tree); err != nil {
+		t.Fatal(err)
+	}
+	if got := payloadType(); got != "pdf" {
+		t.Errorf("outdated cache: got %q, want pdf", got)
 	}
 }
