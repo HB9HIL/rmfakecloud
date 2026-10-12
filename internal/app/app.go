@@ -136,6 +136,7 @@ func NewApp(cfg *config.Config) App {
 		cfg.CreateFirstUser = true
 	}
 	ntfHub := hub.NewHub()
+	fsStorage.OnDocumentChanged = func(uid string) { ntfHub.NotifySync(uid, "") }
 	pcStore := passcodestore.NewInMemory()
 	codeConnector := NewCodeConnector()
 	router := gin.Default()

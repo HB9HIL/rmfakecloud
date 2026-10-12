@@ -440,25 +440,7 @@ func (fs *FileSystemStorage) CreateBlobDocument(uid, filename, parent string, st
 		return
 	}
 
-	// given that the payload can be huge
-	// calculate the hash while streaming the payload to the storage
-	// then rename it
-	tmpdoc, err := os.CreateTemp(blobPath, "blob-upload")
-	if err != nil {
-		return
-	}
-	defer tmpdoc.Close()
-	defer os.Remove(tmpdoc.Name())
-
-	tee := io.TeeReader(stream, tmpdoc)
-	payloadHash, size, err := models.Hash(tee)
-	if err != nil {
-		return nil, err
-	}
-	tmpdoc.Close()
-	payloadFilename := path.Join(blobPath, payloadHash)
-	log.Debug("new payload name: ", payloadFilename)
-	err = os.Rename(tmpdoc.Name(), payloadFilename)
+	payloadHash, size, err := storePayload(blobPath, stream)
 	if err != nil {
 		return nil, err
 	}
@@ -485,6 +467,9 @@ func (fs *FileSystemStorage) CreateBlobDocument(uid, filename, parent string, st
 	if err != nil {
 		return
 	}
+	if ext == storage.PdfFileExt {
+		fs.queueOCR(uid, docid)
+	}
 
 	doc = &storage.Document{
 		ID:     docid,
@@ -492,6 +477,27 @@ func (fs *FileSystemStorage) CreateBlobDocument(uid, filename, parent string, st
 		Parent: "",
 		Name:   docName,
 	}
+	return
+}
+
+// storePayload stores a possibly huge payload as a blob,
+// the hash is calculated while streaming to a temp file which is then renamed
+func storePayload(blobPath string, stream io.Reader) (hash string, size int64, err error) {
+	tmpdoc, err := os.CreateTemp(blobPath, "blob-upload")
+	if err != nil {
+		return
+	}
+	defer tmpdoc.Close()
+	defer os.Remove(tmpdoc.Name())
+
+	hash, size, err = models.Hash(io.TeeReader(stream, tmpdoc))
+	if err != nil {
+		return
+	}
+	tmpdoc.Close()
+	payloadFilename := path.Join(blobPath, hash)
+	log.Debug("new payload name: ", payloadFilename)
+	err = os.Rename(tmpdoc.Name(), payloadFilename)
 	return
 }
 

@@ -75,6 +75,8 @@ const (
 	// envHwrLangOverride override the language specified in myScript requests
 	envHwrLangOverride = "RMAPI_HWR_LANG_OVERRIDE"
 	envHwrHost         = "RMAPI_HWR_HOST"
+	// envOCRURL the ocr service (cmd/ocrserver) that adds a text layer to uploaded pdfs
+	envOCRURL = "RM_OCR_URL"
 	// EnvLogFile log file to use
 	EnvLogFile     = "RM_LOGFILE"
 	envHTTPSCookie = "RM_HTTPS_COOKIE"
@@ -104,6 +106,7 @@ type Config struct {
 	HWRHmac           string
 	HWRLangOverride   string
 	HWRHost           string
+	OCRURL            string
 	HTTPSCookie       bool
 	SessionTTL        time.Duration
 	TrustedProxies    []string
@@ -134,6 +137,10 @@ func (cfg *Config) Verify() {
 	}
 	if cfg.HWRHmac == "" {
 		log.Info("provide the myScript hmac in: " + envHwrHmac)
+	}
+
+	if cfg.OCRURL == "" {
+		log.Info("if you want a text layer for scanned pdfs, provide the ocr service in: " + envOCRURL)
 	}
 
 	if cfg.Certificate.Certificate == nil {
@@ -292,6 +299,7 @@ func FromEnv() *Config {
 		HWRHmac:           os.Getenv(envHwrHmac),
 		HWRLangOverride:   os.Getenv(envHwrLangOverride),
 		HWRHost:           os.Getenv(envHwrHost),
+		OCRURL:            os.Getenv(envOCRURL),
 		HTTPSCookie:       httpsCookie,
 		SessionTTL:        sessionTTL,
 		TrustedProxies:    trustedProxies,

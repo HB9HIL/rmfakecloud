@@ -37,6 +37,10 @@ func NewStorage(cfg *config.Config) *FileSystemStorage {
 		log.Fatal("cannot create the user path " + usersPath)
 	}
 
+	if cfg.OCRURL != "" {
+		fs.ocrJobs = make(chan ocrJob, ocrQueueSize)
+		go fs.ocrWorker()
+	}
 	return fs
 }
 

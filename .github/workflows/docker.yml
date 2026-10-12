@@ -4,11 +4,13 @@ name: Docker image
 # Tag push vX.Y.Z: image X.Y.Z and latest.
 # Manual run: image tagged with the git describe of the selected branch.
 # All platforms on one runner: the Dockerfile cross-compiles, no emulation.
+# The ocr image (docker/ocr.Dockerfile) gets the same tags, its apt-get runs under QEMU.
 on:
   workflow_call:
 
 env:
   IMAGE: ghcr.io/hb9hil/rmfakecloud
+  OCR_IMAGE: ghcr.io/hb9hil/rmfakecloud-ocr
 
 jobs:
   build:
@@ -42,4 +44,23 @@ jobs:
           build-args: VERSION=${{ steps.version.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }}
+          push: true
+      - id: ocrmeta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.OCR_IMAGE }}
+          flavor: |
+            latest=${{ github.ref_type == 'tag' && 'auto' || 'false' }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.ref_type == 'branch' }}
+            type=raw,value=bleeding_edge,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/ocr.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          labels: ${{ steps.ocrmeta.outputs.labels }}
+          tags: ${{ steps.ocrmeta.outputs.tags }}
           push: true

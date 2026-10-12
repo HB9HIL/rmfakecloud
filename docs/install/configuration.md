@@ -32,6 +32,14 @@ Then you'll obtains an application key and its corresponding HMAC to give to rmf
 | `RMAPI_HWR_LANG_OVERRIDE`  | Optional: Use this if you want your handwriting to be recognized as a different language. This variable accepts a locale code (e.g., zh_CN). Refer to [this page](https://app-support.myscript.com/support/solutions/articles/16000086001-supported-languages) for supported languages.|
 | `RMAPI_HWR_HOST`           | Optional: Custom myScript host URL (default: `https://cloud.myscript.com`). Supports http/https and custom ports. |
 
+## OCR for scanned PDFs
+
+PDFs uploaded through the web UI or the upload API get a searchable text layer when an OCR service is configured. The OCR runs in the background, the document is replaced once it is done and the tablet syncs it again. PDFs that already contain text stay as they are. See [Docker](docker.md#ocr-for-scanned-pdfs) for the service.
+
+| Variable name | Description |
+|---------------|-------------|
+| `RM_OCR_URL`  | URL of the OCR service, e.g. `http://ocr:8080`. Empty: no OCR |
+
 ## Email settings
 
 To be able to send email from your reMarkable, fill the following variables:

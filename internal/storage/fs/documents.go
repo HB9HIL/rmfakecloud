@@ -30,6 +30,9 @@ const (
 // FileSystemStorage store everything to disk
 type FileSystemStorage struct {
 	Cfg *config.Config
+	// OnDocumentChanged is called after the server changed a document in the background
+	OnDocumentChanged func(uid string)
+	ocrJobs           chan ocrJob
 }
 
 func sanitizeFileName(fileName string) string {
