@@ -239,7 +239,7 @@ export default function FileView({ file, path }: { file: Doc; path: Entry[] }) {
               <Outline />
             </nav>
           )}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 overflow-auto">
             {height > 0 && (
               <Page
                 suspense={false}

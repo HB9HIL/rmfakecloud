@@ -33,6 +33,26 @@ describe("documents", () => {
     cy.contains("nav[aria-label=Breadcrumb] a", "My Files");
   });
 
+  it("puts search hits on the page", () => {
+    cy.get("input[type=file]").selectFile("cypress/fixtures/text.pdf", { force: true });
+    cy.contains(".filelist-item", "text").dblclick();
+    cy.get(".react-pdf__Page canvas").should("be.visible");
+    cy.get("input[name=q]").type("Searchable{enter}");
+
+    // the text layer must lie on the canvas, not next to it
+    cy.get(".react-pdf__Page canvas").then(([canvas]) => {
+      const page = canvas.getBoundingClientRect();
+      cy.get(".textLayer mark").should(([mark]) => {
+        const hit = mark.getBoundingClientRect();
+        expect(hit.left).to.be.within(page.left, page.right);
+        expect(hit.right).to.be.within(page.left, page.right);
+        expect(hit.top).to.be.within(page.top, page.bottom);
+        expect(hit.bottom).to.be.within(page.top, page.bottom);
+        expect(getComputedStyle(mark).color).to.equal("rgba(0, 0, 0, 0)");
+      });
+    });
+  });
+
   it("creates and renames a folder", () => {
     cy.contains("button", "New Folder").click();
     cy.focused().should("have.value", "New folder").type("Projects{enter}");
