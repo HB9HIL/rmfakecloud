@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/ddvk/rmfakecloud/internal/common"
@@ -342,12 +343,25 @@ func (app *ReactAppWrapper) updateDocument(c *gin.Context) {
 	backend := app.getBackend(c)
 	uid := userID(c)
 	log.Info(uiLogger, ui10, "updatedoc")
-	err := backend.UpdateDocument(uid, upd.DocumentID, upd.Name, upd.ParentID)
+	parent := parentID(upd.ParentID)
+	if parent != "" && parent != "trash" {
+		tree, err := backend.GetDocumentTree(uid)
+		if err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		if parent == upd.DocumentID || slices.Contains(descendants(tree, upd.DocumentID), parent) {
+			badReq(c, "cannot move a folder into itself")
+			return
+		}
+	}
+	err := backend.UpdateDocument(uid, upd.DocumentID, upd.Name, parent)
 	if err != nil {
 		badReq(c, err.Error())
 		return
 	}
-
+	backend.Sync(uid)
 	c.Status(http.StatusOK)
 }
 func (app *ReactAppWrapper) deleteDocument(c *gin.Context) {
@@ -355,10 +369,20 @@ func (app *ReactAppWrapper) deleteDocument(c *gin.Context) {
 	docid := c.Param("docid")
 	backend := app.getBackend(c)
 
-	err := backend.DeleteDocument(uid, docid)
+	tree, err := backend.GetDocumentTree(uid)
 	if err != nil {
-		badReq(c, err.Error())
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
+	// a folder takes its contents with it, otherwise they end up in the root
+	for _, id := range append(descendants(tree, docid), docid) {
+		if err := backend.DeleteDocument(uid, id); err != nil {
+			badReq(c, err.Error())
+			return
+		}
+	}
+	backend.Sync(uid)
 	c.Status(http.StatusOK)
 }
 
@@ -373,12 +397,13 @@ func (app *ReactAppWrapper) createFolder(c *gin.Context) {
 
 	backend := app.getBackend(c)
 
-	doc, err := backend.CreateFolder(uid, upd.Name, upd.ParentID)
+	doc, err := backend.CreateFolder(uid, upd.Name, parentID(upd.ParentID))
 	if err != nil {
 		log.Error(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+	backend.Sync(uid)
 	c.JSON(http.StatusOK, doc)
 }
 
@@ -394,14 +419,12 @@ func (app *ReactAppWrapper) createDocument(c *gin.Context) {
 		badReq(c, "not multiform")
 		return
 	}
-	parentID := ""
-	if parent, ok := form.Value["parent"]; ok {
-		if parent[0] != "root" {
-			parentID = parent[0]
-		}
+	parent := ""
+	if p, ok := form.Value["parent"]; ok {
+		parent = parentID(p[0])
 	}
 
-	log.Info("Parent: " + parentID)
+	log.Info("Parent: " + parent)
 
 	docs := []*storage.Document{}
 	for _, file := range form.File["file"] {
@@ -416,7 +439,7 @@ func (app *ReactAppWrapper) createDocument(c *gin.Context) {
 		//do the stuff
 		log.Info(uiLogger, fmt.Sprintf("Uploading %s , size: %d", file.Filename, file.Size))
 
-		doc, err := backend.CreateDocument(uid, file.Filename, parentID, f)
+		doc, err := backend.CreateDocument(uid, file.Filename, parent, f)
 		if err != nil {
 			var existsErr *models.ErrDocumentExists
 			if errors.As(err, &existsErr) {

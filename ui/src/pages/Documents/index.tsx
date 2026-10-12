@@ -4,10 +4,13 @@ import { BsFolder2Open, BsSearch, BsXLg } from "react-icons/bs";
 
 import type { listDocuments } from "../../api";
 import { inputClass } from "../../components/styles";
-import { Alert, Button } from "../../components/ui";
+import { Alert, Button, Dialog } from "../../components/ui";
 import type { Entry, Folder } from "../../types";
+import { FileManagerContext, useFileManager, type FileManager } from "./actions";
+import ContextMenu from "./ContextMenu";
 import FileView from "./File";
 import type { View } from "./FileList";
+import FileIcon from "./FileIcon";
 import FolderView from "./Folder";
 import { docPath } from "./path";
 import DocumentTree from "./Tree";
@@ -24,6 +27,40 @@ function indexTree(entries: Entry[]) {
   };
   walk(entries);
   return { byId, parentOf };
+}
+
+// the folders to move into, without the moved ones and their subfolders
+function FolderPicker({ files, ids }: { files: FileManager; ids: string[] }) {
+  const rows: Folder[] = [];
+  const depth = new Map<string, number>();
+  const walk = (f: Folder, d: number) => {
+    if (ids.includes(f.id)) return;
+    rows.push(f);
+    depth.set(f.id, d);
+    for (const c of f.children) if (c.isFolder) walk(c, d + 1);
+  };
+  walk(files.byId.get("root") as Folder, 0);
+
+  return (
+    <div className="-mx-2 max-h-[60vh] overflow-auto">
+      {rows.map((f) => (
+        <button
+          key={f.id}
+          type="button"
+          disabled={!files.canMove(ids, f.id)}
+          style={{ paddingLeft: `${0.5 + depth.get(f.id)! * 1.25}rem` }}
+          className="flex w-full cursor-pointer items-center gap-2 rounded py-1.5 pr-2 text-left text-sm hover:bg-line/60 disabled:cursor-default disabled:opacity-40"
+          onClick={() => {
+            files.setMoving(null);
+            files.move(ids, f.id);
+          }}
+        >
+          <FileIcon entry={f} className="text-muted" />
+          <span className="truncate">{f.name}</span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 // the url is the selection: /documents is the root, /documents/:itemId a folder or document
@@ -43,6 +80,7 @@ export default function Documents() {
     [tree],
   );
   const { byId, parentOf } = useMemo(() => indexTree(entries), [entries]);
+  const files = useFileManager(byId, parentOf);
 
   const selected = byId.get(itemId);
   const path: Entry[] = [];
@@ -56,6 +94,7 @@ export default function Documents() {
   }
 
   return (
+    <FileManagerContext value={files}>
     <div className="flex h-full">
       {showTree && <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={() => setShowTree(false)} />}
       {/* a slide-in panel on phones, a column from md upwards */}
@@ -96,6 +135,12 @@ export default function Documents() {
           <FileView key={selected.id} file={selected} path={path} />
         )}
       </section>
+
+      <ContextMenu menu={files.menu} onClose={() => files.setMenu(null)} />
+      <Dialog open={files.moving !== null} onClose={() => files.setMoving(null)} title="Move to">
+        {files.moving && <FolderPicker files={files} ids={files.moving} />}
+      </Dialog>
     </div>
+    </FileManagerContext>
   );
 }

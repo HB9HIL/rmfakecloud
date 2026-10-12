@@ -1,16 +1,36 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { Tree, type NodeRendererProps } from "react-arborist";
 
 import type { Entry, Folder } from "../../types";
+import { useFiles } from "./actions";
 import FileIcon from "./FileIcon";
 
+// arborist's drag and drop is off, but its HTML5 backend would still cancel every other drag on the page
+const noDnd: ComponentProps<typeof Tree>["dndBackend"] = () => ({
+  setup() {},
+  teardown() {},
+  profile: () => ({}),
+  connectDragSource: () => () => {},
+  connectDragPreview: () => () => {},
+  connectDropTarget: () => () => {},
+});
+
 function Node({ node, style }: NodeRendererProps<Entry>) {
+  const files = useFiles();
+  const e = node.data;
+  const top = e.id === "root" || e.id === "trash";
   return (
     <div
       style={style}
-      className={`flex h-full items-center gap-2 rounded px-2 text-sm ${
+      {...(top ? {} : files.dragSource(() => [e.id]))}
+      {...(e.isFolder ? files.dropTarget(e.id) : {})}
+      onContextMenu={(ev) => {
+        ev.preventDefault();
+        files.showMenu(ev.clientX, ev.clientY, top ? files.folderMenu(e.id) : files.itemMenu([e.id]));
+      }}
+      className={`flex h-full items-center gap-2 rounded px-2 text-sm data-over:bg-accent/15 data-over:outline-2 data-over:outline-accent ${
         node.isSelected ? "bg-line/70 font-medium" : "hover:bg-line/40"
-      }`}
+      } ${files.clipboard.includes(e.id) ? "opacity-50" : ""}`}
     >
       <FileIcon entry={node.data} className="text-muted" />
       <span className={`truncate ${node.data.isFolder ? "font-medium" : ""}`}>{node.data.name}</span>
@@ -49,6 +69,7 @@ export default function DocumentTree({ entries, selected, term, onOpen }: Props)
         disableEdit
         disableDrag
         disableDrop
+        dndBackend={noDnd}
       >
         {Node}
       </Tree>

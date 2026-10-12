@@ -1,7 +1,7 @@
 import { jwtDecode } from "jwt-decode";
 
 import { setUser } from "./auth";
-import type { Claims, DocumentTree, Folder, Integration, PasscodeReset, ScreenshareOffer, SignalPayload, TOTPStatus, User } from "./types";
+import type { Claims, DocumentTree, Integration, PasscodeReset, ScreenshareOffer, SignalPayload, TOTPStatus, User } from "./types";
 
 const root = "/ui/api";
 
@@ -64,7 +64,10 @@ export const getCode = () => request<string>("newcode");
 export const listDocuments = () => request<DocumentTree>("documents");
 export const deleteDocument = (id: string) => request(`documents/${id}`, { method: "DELETE" });
 export const createFolder = (name: string, parentId: string) =>
-  request<Folder>("folders", send("POST", { name, parentId }));
+  request<{ ID: string }>("folders", send("POST", { name, parentId }));
+// rename and move in one, the server sets both fields
+export const updateDocument = (documentId: string, name: string, parentId: string) =>
+  request("documents", send("PUT", { documentId, name, parentId }));
 
 export function documentUrl(id: string, type?: "rmdoc") {
   return `${root}/documents/${id}` + (type ? `?type=${type}` : "");

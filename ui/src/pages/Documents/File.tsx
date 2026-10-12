@@ -48,13 +48,15 @@ export default function FileView({ file, path }: { file: Doc; path: Entry[] }) {
       </div>
 
       <div ref={ref} className="min-h-0 flex-1 py-6">
+        {/* without suspense the error props apply, otherwise a broken file takes down the whole page */}
         <Document
+          suspense={false}
           file={documentUrl(file.id)}
           onLoadSuccess={(pdf) => setPages(pdf.numPages)}
           loading={<Spinner />}
           error={<Alert>Failed to load the document.</Alert>}
         >
-          {height > 0 && <Page pageNumber={page} height={height} renderAnnotationLayer={false} renderTextLayer={false} />}
+          {height > 0 && <Page suspense={false} pageNumber={page} height={height} renderAnnotationLayer={false} renderTextLayer={false} />}
         </Document>
       </div>
     </>

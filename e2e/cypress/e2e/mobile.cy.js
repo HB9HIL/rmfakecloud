@@ -24,13 +24,14 @@ describe("mobile", () => {
     cy.get("#folders").should("not.be.visible");
 
     cy.get("input[type=file]").selectFile("cypress/fixtures/test.pdf", { force: true });
-    cy.contains(".filelist-item", "test").click();
+    // cypress has no touch pointer, so it opens like a desktop
+    cy.contains(".filelist-item", "test").dblclick();
     cy.get(".react-pdf__Page canvas").should("be.visible");
 
     cy.visit("/documents");
     cy.contains(".filelist-item", "test").find(".filelist-checkbox").check();
     cy.contains("button", "Delete").click();
-    cy.contains(".filelist-item", "test").should("not.exist");
+    cy.contains('Moved "test" to Trash');
   });
 
   it("has no horizontal overflow", () => {
