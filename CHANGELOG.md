@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Creating, moving and deleting in the web UI notifies the tablet to sync (by @HB9HIL)
 - A document that can't be shown as a PDF (e.g. an EPUB) shows an error in the viewer instead of replacing the whole page with an error (by @HB9HIL)
 - Documents uploaded through the web UI report their file type (pdf, epub) instead of their name, so the document list shows the right icons again; the cached document tree of each user is rebuilt once (by @HB9HIL)
+- Fix UI freeze while loading huge pdf/epubs (by @HB9HIL)
 
 ## [0.4.1] - 2026-10-11
 
