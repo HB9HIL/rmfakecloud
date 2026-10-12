@@ -7,18 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-12
+
 #### Features
-- File handling in the web UI works like a desktop file manager: click selects and double click opens, Ctrl/Cmd and Shift extend the selection, a context menu on documents, folders, the tree and empty space, inline renaming (F2) and new folders, keyboard shortcuts (arrows, Enter, Backspace, Del, Ctrl+A/X/V, type to find), drag and drop onto folders, the tree and the breadcrumb, and uploads by dropping files anywhere in a folder (by @HB9HIL)
-- Deleting in the web UI moves to the trash, with undo; the trash can restore, delete permanently and be emptied (by @HB9HIL)
-- Large documents open faster in the web UI: documents without annotations are served with their size and in ranges, so the viewer shows the first pages without downloading the whole file, and the viewer shows how much has been loaded (by @HB9HIL)
-- The web UI updates the document list live when the tablet syncs or another tab changes something, and shows passcode reset requests right away; the server pushes these as server-sent events (`/ui/api/events`) instead of the UI polling every 5 seconds (by @HB9HIL)
+- File handling in the web UI works like a desktop file manager: context menu, keyboard shortcuts, inline renaming and drag and drop (by @HB9HIL)
+- Deleting in the web UI moves to the trash, with undo (by @HB9HIL)
+- Large documents open faster, the viewer loads only the pages it shows (by @HB9HIL)
+- The document list and passcode reset requests update live (by @HB9HIL)
 
 #### Fixes
-- Permanently deleting a folder also deletes its contents instead of leaving them in the root (by @HB9HIL)
-- Folders created in the root of the web UI no longer store `root` as their parent, and a folder can't be moved into itself (by @HB9HIL)
-- Creating, moving and deleting in the web UI notifies the tablet to sync (by @HB9HIL)
-- A document that can't be shown as a PDF (e.g. an EPUB) shows an error in the viewer instead of replacing the whole page with an error (by @HB9HIL)
-- Documents uploaded through the web UI report their file type (pdf, epub) instead of their name, so the document list shows the right icons again; the cached document tree of each user is rebuilt once (by @HB9HIL)
+- Deleting a folder also deletes its contents (by @HB9HIL)
+- A folder can't be moved into itself (by @HB9HIL)
+- Changes in the web UI notify the tablet to sync (by @HB9HIL)
+- A document that can't be shown as a PDF no longer replaces the whole page with an error (by @HB9HIL)
+- The document list shows the right icons for PDFs and EPUBs again (by @HB9HIL)
 - Fix UI freeze while loading huge pdf/epubs (by @HB9HIL)
 
 ## [0.4.1] - 2026-10-11
