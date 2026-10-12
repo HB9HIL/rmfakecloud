@@ -1,6 +1,6 @@
 # OCR service for rmfakecloud (RM_OCR_URL), see docs/install/docker.md
 # More languages: derive from this image, apt-get install tesseract-ocr-<lang> and set OCR_LANGUAGES
-FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS gobuilder
+FROM --platform=$BUILDPLATFORM golang:1.27-bookworm AS gobuilder
 ARG TARGETOS TARGETARCH TARGETVARIANT
 WORKDIR /src
 COPY go.mod go.sum ./
