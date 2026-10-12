@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"io"
 	"net/url"
 	"os"
 	"path"
@@ -113,5 +114,33 @@ func TestBlobDocumentPayloadType(t *testing.T) {
 	}
 	if got := payloadType(); got != "pdf" {
 		t.Errorf("outdated cache: got %q, want pdf", got)
+	}
+}
+
+// an untouched upload is exported as stored, seekable so the ui can serve ranges of it
+func TestExportUntouchedIsSeekable(t *testing.T) {
+	fs := NewStorage(&config.Config{DataDir: t.TempDir()})
+	uid := "test"
+	if err := os.MkdirAll(fs.getUserBlobPath(uid), 0700); err != nil {
+		t.Fatal(err)
+	}
+	doc, err := fs.CreateBlobDocument(uid, "blah.pdf", "", strings.NewReader("%PDF-dummy"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := fs.Export(uid, doc.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer r.Close()
+	rs, ok := r.(io.ReadSeeker)
+	if !ok {
+		t.Fatalf("got %T, want an io.ReadSeeker", r)
+	}
+	if _, err := rs.Seek(5, io.SeekStart); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := io.ReadAll(rs); string(b) != "dummy" {
+		t.Errorf("got %q after seeking, want the stored bytes", b)
 	}
 }

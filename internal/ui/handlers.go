@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"slices"
 	"time"
@@ -316,6 +317,13 @@ func (app *ReactAppWrapper) getDocument(c *gin.Context) {
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.rmdoc\"", docid))
 	}
 
+	// a stored file has a length and can be read in ranges, the viewer then shows the first pages
+	// without downloading the whole document
+	if rs, ok := reader.(io.ReadSeeker); ok {
+		c.Header("Content-Type", "application/octet-stream")
+		http.ServeContent(c.Writer, c.Request, "", time.Time{}, rs)
+		return
+	}
 	c.DataFromReader(http.StatusOK, -1, "application/octet-stream", reader, nil)
 }
 

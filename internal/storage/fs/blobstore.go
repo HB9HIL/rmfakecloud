@@ -168,6 +168,10 @@ func (fs *FileSystemStorage) Export(uid, docid string) (r io.ReadCloser, err err
 	if err != nil {
 		return nil, err
 	}
+	// nothing to render, the stored file goes out as is and stays seekable for range requests
+	if len(archive.Pages) == 0 && archive.PayloadReader != nil {
+		return archive.PayloadReader, nil
+	}
 	reader, writer := io.Pipe()
 	go func() {
 		err = exporter.RenderPDF(archive, writer)
