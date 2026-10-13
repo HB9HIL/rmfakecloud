@@ -5,7 +5,7 @@ on:
 
 jobs:
   go:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -18,7 +18,7 @@ jobs:
       - run: go test -race ./...
 
   helm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - run: helm lint --strict helm
@@ -26,7 +26,7 @@ jobs:
           helm lint --strict helm --set ocr.enabled=true,ingress.enabled=true,ingress.host=rm.example.com,ingress.tlsSecretName=rm-tls,strategy.type=RollingUpdate,existingSecret=rm,persistence.enabled=false
 
   ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: ui
@@ -49,7 +49,7 @@ jobs:
           retention-days: 1
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
