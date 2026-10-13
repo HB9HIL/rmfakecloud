@@ -3,64 +3,92 @@ name: Docker image
 # Push to master: image tagged with its git describe and bleeding_edge.
 # Tag push vX.Y.Z: image X.Y.Z and latest.
 # Manual run: image tagged with the git describe of the selected branch.
-# All platforms on one runner: the Dockerfile cross-compiles, no emulation.
-# The ocr image (docker/ocr.Dockerfile) gets the same tags, its apt-get runs under QEMU.
+# One job per image and platform on a native runner, pushed by digest; merge joins them into the tagged manifest list.
+# arm/v7 runs on amd64: the Dockerfile cross-compiles and its final stage has no RUN, the ocr apt-get runs under QEMU
+# (the arm64 runners can't execute 32 bit arm).
 on:
   workflow_call:
 
-env:
-  IMAGE: ghcr.io/hb9hil/rmfakecloud
-  OCR_IMAGE: ghcr.io/hb9hil/rmfakecloud-ocr
-
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - { name: rmfakecloud, file: Dockerfile, platform: linux/amd64, runner: ubuntu-latest }
+          - { name: rmfakecloud, file: Dockerfile, platform: linux/arm64, runner: ubuntu-24.04-arm }
+          - { name: rmfakecloud, file: Dockerfile, platform: linux/arm/v7, runner: ubuntu-latest }
+          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/amd64, runner: ubuntu-latest }
+          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/arm64, runner: ubuntu-24.04-arm }
+          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/arm/v7, runner: ubuntu-latest, qemu: true }
     steps:
-      - uses: actions/checkout@v7
+      - &checkout
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - id: version
+      - &version
+        id: version
         run: echo "version=$(git describe --tags --always | sed 's/^v//')" >> "$GITHUB_OUTPUT"
-      - id: meta
+      - &meta
+        id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ${{ env.IMAGE }}
+          images: ghcr.io/hb9hil/${{ matrix.name }}
           flavor: |
             latest=${{ github.ref_type == 'tag' && 'auto' || 'false' }}
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.ref_type == 'branch' }}
             type=raw,value=bleeding_edge,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
-      - uses: docker/login-action@v4
+      - &login
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-buildx-action@v4
-      - uses: docker/build-push-action@v7
+      - uses: docker/setup-qemu-action@v4
+        if: matrix.qemu
+      - &buildx
+        uses: docker/setup-buildx-action@v4
+      - id: build
+        uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          file: ${{ matrix.file }}
+          platforms: ${{ matrix.platform }}
           build-args: VERSION=${{ steps.version.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
-          tags: ${{ steps.meta.outputs.tags }}
-          push: true
-      - id: ocrmeta
-        uses: docker/metadata-action@v6
+          outputs: type=image,name=ghcr.io/hb9hil/${{ matrix.name }},push-by-digest=true,name-canonical=true,push=true
+      - run: mkdir -p "$RUNNER_TEMP/digests" && touch "$RUNNER_TEMP/digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+      # "." as separator, "digests-rmfakecloud-*" would also match the ocr digests
+      - uses: actions/upload-artifact@v7
         with:
-          images: ${{ env.OCR_IMAGE }}
-          flavor: |
-            latest=${{ github.ref_type == 'tag' && 'auto' || 'false' }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.ref_type == 'branch' }}
-            type=raw,value=bleeding_edge,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
-      - uses: docker/setup-qemu-action@v4
-      - uses: docker/build-push-action@v7
+          name: digests-${{ matrix.name }}.${{ strategy.job-index }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        name: [rmfakecloud, rmfakecloud-ocr]
+    steps:
+      - *checkout
+      - *version
+      - *meta
+      - *login
+      - *buildx
+      - uses: actions/download-artifact@v8
         with:
-          context: .
-          file: docker/ocr.Dockerfile
-          platforms: linux/amd64,linux/arm64
-          labels: ${{ steps.ocrmeta.outputs.labels }}
-          tags: ${{ steps.ocrmeta.outputs.tags }}
-          push: true
+          path: ${{ runner.temp }}/digests
+          pattern: digests-${{ matrix.name }}.*
+          merge-multiple: true
+      - working-directory: ${{ runner.temp }}/digests
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf 'ghcr.io/hb9hil/${{ matrix.name }}@sha256:%s ' *)
