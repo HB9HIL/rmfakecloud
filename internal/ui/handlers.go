@@ -12,6 +12,7 @@ import (
 	"github.com/ddvk/rmfakecloud/internal/common"
 	"github.com/ddvk/rmfakecloud/internal/integrations"
 	"github.com/ddvk/rmfakecloud/internal/model"
+	"github.com/ddvk/rmfakecloud/internal/screenshare"
 	"github.com/ddvk/rmfakecloud/internal/storage"
 	"github.com/ddvk/rmfakecloud/internal/storage/models"
 	"github.com/ddvk/rmfakecloud/internal/ui/viewmodel"
@@ -871,12 +872,28 @@ func (app *ReactAppWrapper) screenshareGetOffer(c *gin.Context) {
 	uid := userID(c)
 	clientID := c.GetString(browserIDContextKey)
 
-	roomID := app.roomManager.FindActiveRoom(uid)
-	if roomID == "" {
-		c.JSON(http.StatusNotFound, gin.H{"error": "no active room"})
-		return
+	// a wait ends early when the tablet replaces its room, then ask the new one
+	deadline := time.Now().Add(30 * time.Second)
+	for time.Now().Before(deadline) {
+		roomID := app.roomManager.FindActiveRoom(uid)
+		if roomID == "" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "no active room"})
+			return
+		}
+		if msgs := app.requestOffer(uid, clientID, roomID, time.Until(deadline)); msgs != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"roomId":     roomID,
+				"messages":   msgs,
+				"iceServers": app.cfg.ICEServers,
+			})
+			return
+		}
 	}
+	c.JSON(http.StatusGatewayTimeout, gin.H{"error": "timeout waiting for offer"})
+}
 
+// requestOffer asks the tablet in the room for an offer and waits for it
+func (app *ReactAppWrapper) requestOffer(uid, clientID, roomID string, timeout time.Duration) []screenshare.Message {
 	app.roomManager.AddBroadcast(roomID, clientID, json.RawMessage(`{"type":"request-offer","clientId":"`+clientID+`"}`))
 
 	var inner map[string]interface{}
@@ -898,17 +915,7 @@ func (app *ReactAppWrapper) screenshareGetOffer(c *gin.Context) {
 		}
 	}
 
-	msgs := app.roomManager.WaitForMessages(roomID, 1, 30*time.Second)
-	if msgs == nil {
-		c.JSON(http.StatusGatewayTimeout, gin.H{"error": "timeout waiting for offer"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"roomId":     roomID,
-		"messages":   msgs,
-		"iceServers": app.cfg.ICEServers,
-	})
+	return app.roomManager.WaitForMessages(roomID, 1, timeout)
 }
 
 func (app *ReactAppWrapper) screenshareSendAnswer(c *gin.Context) {

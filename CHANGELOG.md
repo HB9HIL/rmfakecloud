@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Fixes
+- Screen share connects when sharing is restarted on the tablet shortly after the last session (by @HB9HIL)
+
 #### Chore
 - Dependabot checks Go, npm, GitHub Actions and Docker dependencies daily (by @HB9HIL)
 

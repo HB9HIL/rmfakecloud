@@ -22,6 +22,7 @@ type Room struct {
 	ownerUserID  string
 	messages     []Message
 	notify       chan struct{}
+	closed       chan struct{}
 }
 
 type RoomClient struct {
@@ -39,6 +40,12 @@ type Message struct {
 
 const roomTimeout = 60 * time.Second
 
+// remove deletes the room and wakes everyone waiting on it, rm.mu must be held
+func (rm *RoomManager) remove(roomID string) {
+	close(rm.rooms[roomID].closed)
+	delete(rm.rooms, roomID)
+}
+
 func NewRoomManager() *RoomManager {
 	rm := &RoomManager{
 		rooms: make(map[string]*Room),
@@ -55,7 +62,7 @@ func (rm *RoomManager) expireLoop() {
 		now := time.Now().UTC()
 		for id, room := range rm.rooms {
 			if now.Sub(room.lastActivity) > roomTimeout {
-				delete(rm.rooms, id)
+				rm.remove(id)
 				log.Infof("Screenshare: expired room=%s (no keepalive for %s)", id, roomTimeout)
 			}
 		}
@@ -75,6 +82,14 @@ func (rm *RoomManager) CreateRoom(userID, deviceID string) *Room {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 
+	// the tablet doesn't delete its room when sharing stops, a new one replaces it
+	for id, room := range rm.rooms {
+		if p := room.participants[deviceID]; room.ownerUserID == userID && p != nil && p.IsOwner {
+			rm.remove(id)
+			log.Infof("Screenshare: replaced room=%s", id)
+		}
+	}
+
 	roomID := uuid.New().String()
 	now := time.Now().UTC()
 	room := &Room{
@@ -84,6 +99,7 @@ func (rm *RoomManager) CreateRoom(userID, deviceID string) *Room {
 		participants: make(map[string]*RoomClient),
 		ownerUserID:  userID,
 		notify:       make(chan struct{}, 1),
+		closed:       make(chan struct{}),
 	}
 	room.participants[deviceID] = &RoomClient{
 		ClientID: deviceID,
@@ -177,6 +193,8 @@ func (rm *RoomManager) WaitForMessages(roomID string, after int, timeout time.Du
 		}
 		select {
 		case <-room.notify:
+		case <-room.closed:
+			return nil
 		case <-deadline:
 			return nil
 		}
@@ -227,7 +245,7 @@ func (rm *RoomManager) RemoveParticipant(clientID string) {
 				roomID, clientID, len(room.participants))
 
 			if len(room.participants) == 0 {
-				delete(rm.rooms, roomID)
+				rm.remove(roomID)
 				log.Infof("Screenshare: removed empty room=%s", roomID)
 			}
 			return
@@ -240,7 +258,7 @@ func (rm *RoomManager) DeleteAllForUser(userID string) {
 	defer rm.mu.Unlock()
 	for id, room := range rm.rooms {
 		if room.ownerUserID == userID {
-			delete(rm.rooms, id)
+			rm.remove(id)
 			log.Infof("Screenshare: deleted room=%s for user=%s", id, userID)
 		}
 	}
@@ -250,7 +268,7 @@ func (rm *RoomManager) DeleteRoom(roomID, userID string) {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 	if room, exists := rm.rooms[roomID]; exists && room.ownerUserID == userID {
-		delete(rm.rooms, roomID)
+		rm.remove(roomID)
 		log.Infof("Screenshare: deleted room=%s", roomID)
 	}
 }
