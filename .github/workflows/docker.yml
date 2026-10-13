@@ -15,12 +15,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - { name: rmfakecloud, file: Dockerfile, platform: linux/amd64, runner: ubuntu-latest }
-          - { name: rmfakecloud, file: Dockerfile, platform: linux/arm64, runner: ubuntu-24.04-arm }
-          - { name: rmfakecloud, file: Dockerfile, platform: linux/arm/v7, runner: ubuntu-latest }
-          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/amd64, runner: ubuntu-latest }
-          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/arm64, runner: ubuntu-24.04-arm }
-          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/arm/v7, runner: ubuntu-latest, qemu: true }
+          - { name: rmfakecloud, file: Dockerfile, platform: linux/amd64, runner: ubuntu-26.04 }
+          - { name: rmfakecloud, file: Dockerfile, platform: linux/arm64, runner: ubuntu-26.04-arm}
+          - { name: rmfakecloud, file: Dockerfile, platform: linux/arm/v7, runner: ubuntu-26.04 }
+          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/amd64, runner: ubuntu-26.04 }
+          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/arm64, runner: ubuntu-26.04-arm}
+          - { name: rmfakecloud-ocr, file: docker/ocr.Dockerfile, platform: linux/arm/v7, runner: ubuntu-26.04, qemu: true }
     steps:
       - &checkout
         uses: actions/checkout@v7
@@ -72,7 +72,7 @@ jobs:
 
   merge:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         name: [rmfakecloud, rmfakecloud-ocr]
