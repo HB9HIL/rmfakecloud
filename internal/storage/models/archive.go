@@ -48,13 +48,6 @@ func ArchiveFromHashDoc(doc *HashDoc, rs RemoteStorage) (*exporter.MyArchive, er
 			if err != nil {
 				return nil, err
 			}
-			// defer blob.Close()
-			// contentBytes, err := ioutil.ReadAll(blob)
-			// if err != nil {
-			// 	return nil, err
-			// }
-			// a.Payload = contentBytes
-			//HACK:
 			a.PayloadReader = blob.(io.ReadSeekCloser)
 
 		case ".json":

@@ -85,12 +85,10 @@ func (app *ReactAppWrapper) RegisterRoutes(router *gin.Engine) {
 	auth.POST("passcode/resets/:uuid/approve", app.approvePasscodeReset)
 	auth.DELETE("passcode/resets/:uuid", app.dismissPasscodeReset)
 
-	// auth.GET("profile", app.newCode)
 	auth.POST("profile", app.changePassword)
 	auth.GET("profile/totp", app.getTOTP)
 	auth.POST("profile/totp", app.enableTOTP)
 	auth.POST("profile/totp/disable", app.disableTOTP)
-	// auth.POST("changeEmail", app.changePassword)
 
 	auth.GET("documents", app.listDocuments)
 	auth.GET("documents/:docid", app.getDocument)

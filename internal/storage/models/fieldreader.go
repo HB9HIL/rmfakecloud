@@ -11,11 +11,6 @@ type FieldReader struct {
 	fields []string
 }
 
-// HasNext are there more fields
-func (fr *FieldReader) HasNext() bool {
-	return fr.index < len(fr.fields)
-}
-
 // Next read the next field
 func (fr *FieldReader) Next() (string, error) {
 	if fr.index >= len(fr.fields) {

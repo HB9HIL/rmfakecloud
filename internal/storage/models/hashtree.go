@@ -48,19 +48,6 @@ func Hash(r io.Reader) (string, int64, error) {
 	hstr := hex.EncodeToString(h)
 	return hstr, w, err
 }
-func FileHashAndSize(file string) ([]byte, int64, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer f.Close()
-
-	hasher := sha256.New()
-	io.Copy(hasher, f)
-	h := hasher.Sum(nil)
-	size, err := f.Seek(0, io.SeekEnd)
-	return h, size, err
-}
 
 // cacheVersion invalidates cached trees written with wrong derived fields,
 // 1: PayloadType holds the file type, not the document name
@@ -441,23 +428,6 @@ func MissingBlobs(r RemoteStorage, exists func(hash string) bool) ([]string, err
 		}
 	}
 	return missing, nil
-}
-
-// BuildTree from remote storage
-func BuildTree(provider RemoteStorage) (*HashTree, error) {
-	rootHash, gen, err := provider.GetRootIndex()
-
-	if err != nil {
-		return nil, err
-	}
-
-	rootIndex, err := provider.GetReader(rootHash)
-	if err != nil {
-		return nil, err
-	}
-	defer rootIndex.Close()
-
-	return buildTreeFromFile(provider, rootIndex, rootHash, gen)
 }
 
 func buildTreeFromFile(provider RemoteStorage, rootFile io.Reader, rootHash string, gen int64) (*HashTree, error) {

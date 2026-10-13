@@ -32,15 +32,6 @@ export function Alert({ kind = "error", children }: { kind?: "error" | "info"; c
   );
 }
 
-export function Spinner({ label = "Loading…" }: { label?: string }) {
-  return (
-    <div role="status" className="flex items-center justify-center gap-2 p-6 text-sm text-muted">
-      <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-      {label}
-    </div>
-  );
-}
-
 type DialogProps = { open: boolean; onClose: () => void; title: string; children: ReactNode };
 
 // native modal dialog: focus trap, Esc and the backdrop come from the browser

@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ddvk/rmfakecloud/internal/common"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,17 +35,6 @@ func NewHashDocWithMeta(documentID string, meta MetadataFile) *HashDoc {
 		},
 	}
 
-}
-func NewHashDoc(name, documentID string, docType common.EntryType) *HashDoc {
-	return &HashDoc{
-		MetadataFile: MetadataFile{
-			DocumentName:   name,
-			CollectionType: docType,
-		},
-		HashEntry: HashEntry{
-			EntryName: documentID,
-		},
-	}
 }
 
 // Rehash re-calculates the hash
