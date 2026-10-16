@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Fixes
+
+- sync15: blob uploads are written to a temp file and renamed, an aborted upload no longer leaves a truncated blob under its hash (by @HB9HIL)
+- web UI: folders with the literal parent `root` from older UI versions are shown at the top level without a warning (by @HB9HIL)
+- removed a leftover debug print on every static asset request (by @HB9HIL)
+
 ## [0.6.2] - 2026-10-16
 
 ### Chore
