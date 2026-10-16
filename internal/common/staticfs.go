@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -24,7 +23,6 @@ func (f *StaticFileInfoWrapper) ModTime() time.Time {
 	return f.LastModfied
 }
 func (f *StaticFileWrapper) Stat() (os.FileInfo, error) {
-	fmt.Println("calling stat")
 	fi, err := f.File.Stat()
 	return &StaticFileInfoWrapper{FileInfo: fi, LastModfied: f.LastModified}, err
 }
