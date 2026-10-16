@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-16
+
 #### Fixes
+- The web UI has its own icon on the iPhone and iPad home screen (by @HB9HIL)
 - Screen share connects when sharing is restarted on the tablet shortly after the last session (by @HB9HIL)
 
 #### Chore

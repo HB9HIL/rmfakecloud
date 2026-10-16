@@ -16,6 +16,7 @@ var rootFiles = []string{
 	"sw.js",
 	"icon-192.png",
 	"icon-512.png",
+	"apple-touch-icon.png",
 }
 
 func cacheControl(value string) gin.HandlerFunc {
