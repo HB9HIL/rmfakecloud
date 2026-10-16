@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"github.com/ddvk/rmfakecloud/internal/config"
@@ -142,5 +143,34 @@ func TestExportUntouchedIsSeekable(t *testing.T) {
 	}
 	if b, _ := io.ReadAll(rs); string(b) != "dummy" {
 		t.Errorf("got %q after seeking, want the stored bytes", b)
+	}
+}
+
+// an aborted upload leaves no truncated blob behind
+func TestStoreBlobAbortedUpload(t *testing.T) {
+	fs := NewStorage(&config.Config{DataDir: t.TempDir()})
+	uid := "test"
+	if err := os.MkdirAll(fs.getUserBlobPath(uid), 0700); err != nil {
+		t.Fatal(err)
+	}
+
+	broken := io.MultiReader(strings.NewReader("partial"), iotest.ErrReader(io.ErrUnexpectedEOF))
+	if _, err := fs.StoreBlob(uid, "abc", broken, 0); err != io.ErrUnexpectedEOF {
+		t.Fatalf("got %v, want %v", err, io.ErrUnexpectedEOF)
+	}
+	entries, err := os.ReadDir(fs.getUserBlobPath(uid))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 0 {
+		t.Errorf("blob dir not empty: %v", entries)
+	}
+
+	if _, err := fs.StoreBlob(uid, "abc", strings.NewReader("ok"), 0); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(path.Join(fs.getUserBlobPath(uid), "abc"))
+	if err != nil || string(b) != "ok" {
+		t.Errorf("got %q, %v", b, err)
 	}
 }

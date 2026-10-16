@@ -798,16 +798,19 @@ func (fs *FileSystemStorage) StoreBlob(uid, id string, stream io.Reader, lastGen
 
 	blobPath := path.Join(fs.getUserBlobPath(uid), common.Sanitize(id))
 	log.Info("Write: ", blobPath)
-	file, err := os.Create(blobPath)
+	// write to a temp file first so an aborted upload never leaves a truncated blob behind
+	file, err := os.CreateTemp(fs.getUserBlobPath(uid), "blob-upload")
 	if err != nil {
 		return
 	}
 	defer file.Close()
+	defer os.Remove(file.Name())
 	_, err = io.Copy(file, reader)
 	if err != nil {
 		return
 	}
-
+	file.Close()
+	err = os.Rename(file.Name(), blobPath)
 	return
 }
 
