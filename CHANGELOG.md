@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-10-17
+
 #### Fixes
 
 - sync15: blob uploads are written to a temp file and renamed, an aborted upload no longer leaves a truncated blob under its hash (by @HB9HIL)
