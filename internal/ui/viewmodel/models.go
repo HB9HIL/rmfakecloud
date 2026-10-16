@@ -155,8 +155,8 @@ func DocTreeFromRawMetadata(documents []*InternalDoc) *DocumentTree {
 			continue
 		}
 
-		if parent == "" {
-			// empty parent = root
+		if parent == "" || parent == "root" {
+			// empty parent = root, "root" was written by older UI versions
 			rootEntries = append(rootEntries, entry)
 			continue
 		}
