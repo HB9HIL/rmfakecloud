@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-10-24
+
 #### Fixes
 
 - Screen share with the official desktop app works on tablets with 3.27+: device signaling is relayed over the notification socket ([ddvk#505](https://github.com/ddvk/rmfakecloud/pull/505)) (by @elektricM)
