@@ -152,6 +152,8 @@ export default function FolderView({ folder, path, view, onView, onOpen }: Props
         })}
         // getRootProps drops onKeyDown with noKeyboard
         onKeyDown={onKeyDown}
+        // a disabled dropzone (trash) marks the whole list aria-disabled, but only dropping is off
+        aria-disabled={undefined}
       >
         <input {...getInputProps()} />
         {isDragActive && (

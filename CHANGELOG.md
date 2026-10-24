@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+#### Fixes
+
+- web UI: the file list in the trash is no longer marked as disabled for screen readers (by @HB9HIL)
+
 ## [0.6.4] - 2026-10-24
 
 #### Fixes
