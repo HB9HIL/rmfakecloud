@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Screen share with the official desktop app works on tablets with 3.27+: device signaling is relayed over the notification socket ([ddvk#505](https://github.com/ddvk/rmfakecloud/pull/505)) (by @elektricM)
 - docs: external access with mTLS, certificate and key are file names only, pair before enabling mTLS ([ddvk#459](https://github.com/ddvk/rmfakecloud/pull/459)) (by @spontanurlaub)
 
+#### Chore
+
+- Deps updated (by @Dependabot)
+
 ## [0.6.3] - 2026-10-17
 
 #### Fixes
