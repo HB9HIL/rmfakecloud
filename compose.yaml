@@ -55,7 +55,7 @@ services:
         - path: ./docker/ocr.Dockerfile
           action: rebuild
 
-  # empty instance for the Cypress tests, started by `make e2e`
+  # empty instance for the Playwright tests, started by `make e2e`
   e2e:
     profiles: [e2e]
     build: .
@@ -65,6 +65,20 @@ services:
       JWT_SECRET_KEY: e2e
     tmpfs:
       - /data
+
+  # PLAYWRIGHT_VERSION is set by `make e2e` from e2e/package.json
+  playwright:
+    profiles: [e2e]
+    image: mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION:-0}-noble
+    working_dir: /e2e
+    volumes:
+      - ./e2e:/e2e
+    ipc: host
+    environment:
+      BASE_URL: http://e2e:3000
+      HOME: /tmp
+      CI: ${CI:-}
+    command: sh -c "npm ci && npx playwright test"
 
 volumes:
   ui_node_modules:

@@ -58,12 +58,11 @@ See the [documentation](https://hb9hil.github.io/rmfakecloud/remarkable/setup/) 
 http://localhost:3001, the backend on http://localhost:3000 (rebuilt on Go
 changes) and mailpit for outgoing mails on http://localhost:8025. The first
 login creates the admin user. `make test` and `make lint` run natively with Go.
-`make e2e` runs the Cypress tests in `e2e/` against an empty instance built
-from the Dockerfile in Chrome (`make e2e BROWSER=chromium` for another installed
-browser); screenshots of failed tests land in `e2e/cypress/screenshots`.
-For writing tests start that instance with `docker compose up -d --build e2e`
-and open Cypress with `cd e2e && npx cypress open`. On Linux Cypress needs the
-[system dependencies](https://docs.cypress.io/app/get-started/install-cypress#Linux-Prerequisites).
+`make e2e` runs the Playwright tests in `e2e/` in the Playwright docker image
+against an empty instance built from the Dockerfile; traces and screenshots of
+failed tests land in `e2e/test-results` (open traces on https://trace.playwright.dev).
+For writing tests start that instance with `docker compose up -d --build e2e` and
+the Playwright UI with `make e2e-ui`, then open http://localhost:8081.
 
 Releases: note the changes under `## [Unreleased]` in `CHANGELOG.md`, move them
 into a `## [X.Y.Z] - date` section and push the tag `vX.Y.Z`. The release

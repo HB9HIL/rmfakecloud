@@ -13,7 +13,7 @@ UIFILES += ui/package.json
 TARGETS := $(addprefix $(OUT_DIR)/$(BINARY)-, x64 armv6 armv7 arm64 win64)
 NPM	= cd ui; npm
 
-.PHONY: all build dev image lint test e2e clean
+.PHONY: all build dev image lint test e2e e2e-ui clean
 
 build: $(OUT_DIR)/$(BINARY)-x64
 
@@ -65,11 +65,13 @@ test:
 	@test -e $(ASSETS) || $(MAKE) $(ASSETS)
 	go test -race ./...
 
-# Cypress (e2e/) against an empty instance built from the Dockerfile
-# Electron is deprecated in Cypress, the browser must be installed locally
-BROWSER ?= chrome
+# Playwright (e2e/) in its docker image against an empty instance built from the Dockerfile
+# the image tag follows the pinned @playwright/test version
+export PLAYWRIGHT_VERSION := $(shell sed -n 's/.*"@playwright\/test": "\(.*\)".*/\1/p' e2e/package.json)
 e2e:
 	docker compose up --build --detach --force-recreate e2e
-	cd e2e && npm ci && rm -rf cypress/screenshots cypress/videos
-	@for i in $$(seq 30); do curl -sf -o /dev/null http://localhost:3002/health && break; sleep 1; done
-	(cd e2e && npx cypress run --browser $(BROWSER)); status=$$?; docker compose rm --stop --force e2e; exit $$status
+	docker compose run --rm --no-deps --user $$(id -u):$$(id -g) playwright; status=$$?; docker compose rm --stop --force e2e; exit $$status
+
+# Playwright UI on http://localhost:8081, start the instance first: docker compose up -d --build e2e
+e2e-ui:
+	docker compose run --rm --no-deps --user $$(id -u):$$(id -g) -p 8081:8081 playwright sh -c "npm ci && npx playwright test --ui-host=0.0.0.0 --ui-port=8081"
