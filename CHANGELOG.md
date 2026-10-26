@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-10-26
+
 #### Fixes
 
 - web UI: the file list in the trash is no longer marked as disabled for screen readers (by @HB9HIL)
@@ -14,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Chore
 
 - E2E tests run with Playwright in Docker instead of Cypress (by @HB9HIL)
+- deps updated (by @dependabot)
 
 ## [0.6.4] - 2026-10-24
 
