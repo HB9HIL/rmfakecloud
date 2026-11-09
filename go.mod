@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/apognu/gocal v0.9.1
 	github.com/danjacques/gofslock v0.0.0-20240212154529-d899e02bfe22
-	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.6.2
+	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.6.3
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0

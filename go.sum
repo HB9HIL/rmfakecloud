@@ -19,8 +19,8 @@ github.com/danjacques/gofslock v0.0.0-20240212154529-d899e02bfe22/go.mod h1:jXqs
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.6.2 h1:zRpx93GLA2IYx4z2NTW6uTJgQ2f0CJ93xIj+w6Aoy3U=
-github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.6.2/go.mod h1:M8nJfTVC7mxuxRSMHWbhg38bhkW63+3MoAGi/6R/umg=
+github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.6.3 h1:f0sO0UL0eaL8pkkS/LYEbn5C1nnWSgmdkb6N6icFdm8=
+github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.6.3/go.mod h1:doqEeig8Sxrb7x3jcXLq6Kv+YZGqCm1pGFBNuYlEgnM=
 github.com/gabriel-vasile/mimetype v1.4.15 h1:05iP/CYtZ/w455R/KZM6rZ5ieAdh99UPtd+d3YzLmaI=
 github.com/gabriel-vasile/mimetype v1.4.15/go.mod h1:azpTcoLcDZRNgFou5j+APrqQx9HqVPWa6ijYQIIVswQ=
 github.com/gin-contrib/sse v1.1.2 h1:MU2fgl1RrdYTMcgJLtz2kJF+vPg3xrqaaKfUUU18tCo=
